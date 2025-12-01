@@ -4,6 +4,7 @@
 
 #include "GraphManager.h"
 #include <fstream>
+#include <iomanip>
 #include <limits>
 #include <algorithm>
 #include <unordered_set>
@@ -304,15 +305,23 @@ void GraphManager::WriteOutDotFile(const std::string& filename) const
     using VD = boost::graph_traits<Graph>::vertex_descriptor;
     using ED = boost::graph_traits<Graph>::edge_descriptor;
 
+    // TODO rewrite with std::format or format
     struct VertexWriter {
         const Graph* g;
         void operator()(std::ostream& os, const VD& v) const {
             const auto& lbl = (*g)[v];
+            const auto& td = lbl.service_time_dist;
             const double mean = lbl.service_time_dist.expected_value();
-            os << " [shape=box, style=filled, fillcolor=lightyellow, color=black, penwidth=1, label=\"" << lbl.id;
+            os << std::fixed << std::setprecision(1);
+            os << " [shape=box, style=filled, fillcolor=lightyellow, color=black, penwidth=1, label=\"" << 'S' << lbl.id;
             if (!lbl.name.empty()) os << ": " << lbl.name;
-            os << "\\nmax capacity = " << static_cast<int>(lbl.buffer_capacity)
-               << "\\nmean service time = " << mean << " (" << TimeDistTypeToString(lbl.service_time_dist.type) << ")\"]";
+            os << "\\nmax capacity: " << static_cast<int>(lbl.buffer_capacity)
+               << "\\ns" << lbl.id << ": " << TimeDistTypeToString(td.type) << " (";
+            for (size_t i = 0; i < td.parameters.size(); ++i) {
+                if (i) os << ", ";
+                os << td.parameters[i];
+            }
+            os << ")\"]";
         }
     };
 
@@ -321,12 +330,14 @@ void GraphManager::WriteOutDotFile(const std::string& filename) const
         void operator()(std::ostream& os, const ED& e) const {
             const auto& el = (*g)[e];
             const auto& td = el.transfer_time_dist;
-            os << " [color=black, penwidth=1, arrowsize=1.0, label=\"" << TimeDistTypeToString(td.type) << ": (";
+            os << std::fixed << std::setprecision(1);
+            os << " [color=black, penwidth=1, arrowsize=1.0, label=\" t" << el.tail << ',' << el.head << ": ";
+            os << TimeDistTypeToString(td.type) << " (";
             for (size_t i = 0; i < td.parameters.size(); ++i) {
                 if (i) os << ", ";
                 os << td.parameters[i];
             }
-            os << ")\\nmean transfer time =" << td.expected_value() << "\"]";
+            os << ")\"]";
         }
     };
 

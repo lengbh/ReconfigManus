@@ -205,6 +205,7 @@ struct ST_ArcLabel
     uint32_t tail{};
     uint32_t head{};
     ST_TimeDist transfer_time_dist;
+    // TODO could add indicator, int queued_number and a std::queue<> containing the timestamp added
 };
 
 
