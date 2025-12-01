@@ -343,7 +343,7 @@ void GraphManager::WriteOutDotFile(const std::string& filename) const
 
     // Can be converted to png using commands:
     // `dot -Tpng xxx.dot -o xxx.png`
-    // `dot -Tpdf xxx.dot -x xxx.pdf`
+    // `dot -Tpdf xxx.dot -o xxx.pdf`
     boost::write_graphviz(out, *graph_, VertexWriter{graph_.get()}, EdgeWriter{graph_.get()});
 }
 

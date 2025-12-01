@@ -1,6 +1,0 @@
-{
-  "mes_service": {
-    "bind_port": 6789,
-    "product_type": 3
-  }
-}

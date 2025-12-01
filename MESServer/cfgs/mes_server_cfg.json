@@ -1,0 +1,13 @@
+{
+  "mes_service": {
+    "bind_port": 6789
+  },
+  "production_system":{
+    "graph_file": "two_station_circular_system_graph.json",
+    "capabilities_file": "two_station_circular_system_capabilities.json"
+  },
+  "product_info": {
+    "products_file": "products.json",
+    "product_type": 1
+  }
+}

@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <memory>
 #include "nlohmann/json.hpp"
-#include "../ProductManager/ProductManager.h"
+#include "ProductManager.h"
 
 class MESServer; // forward declaration
 using json = nlohmann::json;

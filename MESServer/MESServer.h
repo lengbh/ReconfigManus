@@ -7,16 +7,16 @@
 
 #include "TCPServer.h"
 #include "mes_server_def.h"
-#include "GraphManager/GraphManager.h"
-#include "OrderManager/OrderManager.h"
-#include "ProcessManager/ProcessManager.h"
+#include "GraphManager.h"
+#include "OrderManager.h"
+#include "ProcessManager.h"
 
 class MESServer : public TCPConn::ITCPServer<TCPConn::TCPMsg>
 {
     friend class ProcessManager;
     friend class OrderManager;
 public:
-    MESServer(uint16_t port, const json & j_graph, const json & j_stations, const json & j_products, uint8_t product_type);
+    MESServer(uint16_t port, const json & j_graph, const json & j_capabilities, const json & j_products, uint8_t product_type);
 
     ~MESServer() override = default;
 

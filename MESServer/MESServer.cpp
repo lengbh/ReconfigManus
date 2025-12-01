@@ -7,12 +7,12 @@
 #include "mes_server_def.h"
 #include <memory>
 
-MESServer::MESServer(uint16_t port, const json& j_graph, const json& j_stations, const json& j_products, uint8_t product_type)
+MESServer::MESServer(uint16_t port, const json& j_graph, const json& j_capabilities, const json& j_products, uint8_t product_type)
     : ITCPServer<TCPConn::TCPMsg>(port)
 {
     graph_manager_ = std::make_unique<GraphManager>(j_graph);
-    graph_manager_->WriteOutDotFile("example_graph.dot");
-    process_manager_ = std::make_unique<ProcessManager>(std::shared_ptr<MESServer>(this), j_stations, j_products, product_type);
+    graph_manager_->WriteOutDotFile("system_graph.dot");
+    process_manager_ = std::make_unique<ProcessManager>(std::shared_ptr<MESServer>(this), j_capabilities, j_products, product_type);
     order_manager_ = std::make_unique<OrderManager>();
 }
 

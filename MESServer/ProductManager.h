@@ -8,8 +8,8 @@
 #include <vector>
 #include <string>
 #include <nlohmann/json.hpp>
-#include "../mes_server_def.h"
-#include "../OrderManager/OrderManager.h"
+#include "mes_server_def.h"
+#include "OrderManager.h"
 
 using json = nlohmann::json;
 

@@ -4,7 +4,7 @@
 
 #include "ProcessManager.h"
 #include "LogMacros.h"
-#include "../MESServer.h"
+#include "MESServer.h"
 #include <algorithm>
 
 ProcessManager::ProcessManager(const std::shared_ptr<MESServer>& mes_server_ptr, const json& station_cfg, const json & products_cfg, uint8_t product_type)
