@@ -4,10 +4,46 @@ A lab-scale Reconfigurable Manufacturing System (RMS) built with Fischertechnik 
 
 > Developed by *Bohan Leng*
 
-## Installation
-`git clone --recursive-submodules https://github.com/lengbh/ReconfigManus.git`
+## Quick Start
 
+### Clone the repository and submodules
+```shell
+git clone --recursive https://github.com/lengbh/ReconfigManus.git
+cd ReconfigManus
+```
 
+### Install Dependencies
+
+On MacOS Linux, it is recommended to use [`brew`](https://brew.sh) to install dependencies.
+
+After installing `brew`, run:
+
+```shell
+brew install cmake boost pybind11 python nlohmann-json
+```
+
+### Build
+Then build 
+- MES Server,
+- TCPConn library for MES Server,
+- Pybind library to be copied to python DES Engine side.
+
+Take `brew` managed packages for example,
+```shell
+cmake -S . -B cmake-build-release \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DPython3_ROOT_DIR="$(brew --prefix python)" \
+  -DPython3_EXECUTABLE="$(brew --prefix python)/bin/python3"
+  
+cmake --build cmake-build-release --config Release
+```
+
+### Run MES Server
+```shell
+cd bin
+./MESServer
+```
+Here check `mes_server_cfg.json` for configuration options.
 
 ## MESServer
 ### Dependencies
@@ -166,4 +202,4 @@ for the loaded generated `.dot` graph figure, could convert with [`graphviz`](ht
 - `dot -Tpng system_graph.dot -o system_graph.png`
 
 ### Note
-`mes_server_def.h` should be synced to the Digital Twin simulation and transcribed to python to support the communication.
+The protocol definition `mes_server_def.h` should be synced to the Digital Twin simulation and transcribed to python to support the communication.
