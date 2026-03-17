@@ -1,0 +1,926 @@
+{
+  "vertices": [
+    {
+      "id": 1,
+      "name": "Station 1",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.33,
+          1.31
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "Station 2",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          2.05
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "name": "Station 3",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.33,
+          2.09
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "name": "Station 4",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.0,
+          1.47
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "name": "Station 5",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.0,
+          1.87
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "name": "Station 6",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.0,
+          0.82
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "name": "Station 7",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          1.03
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "name": "Station 8",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.33,
+          1.84
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "name": "Station 9",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.0,
+          1.08
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "name": "Station 10",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          1.43
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "name": "Station 11",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.0,
+          1.63
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "name": "Station 12",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.33,
+          1.84
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "name": "Station 13",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9.33,
+          1.7
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "name": "Station 14",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.0,
+          1.47
+        ]
+      }
+    },
+    {
+      "id": 15,
+      "name": "Station 15",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          1.84
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "name": "Station 16",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.33,
+          0.85
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "name": "Station 17",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          7.67,
+          1.03
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "name": "Station 18",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          1.03
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "name": "Station 19",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          7.67,
+          1.65
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "name": "Station 20",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          7.33,
+          1.25
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "name": "Station 21",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          1.55
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "name": "Station 22",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9.33,
+          1.84
+        ]
+      }
+    },
+    {
+      "id": 23,
+      "name": "Station 23",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          1.25
+        ]
+      }
+    },
+    {
+      "id": 24,
+      "name": "Station 24",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          7.33,
+          1.43
+        ]
+      }
+    },
+    {
+      "id": 25,
+      "name": "Station 25",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          7.67,
+          1.31
+        ]
+      }
+    },
+    {
+      "id": 26,
+      "name": "Station 26",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.33,
+          1.03
+        ]
+      }
+    },
+    {
+      "id": 27,
+      "name": "Station 27",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          1.55
+        ]
+      }
+    },
+    {
+      "id": 28,
+      "name": "Station 28",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          1.65
+        ]
+      }
+    },
+    {
+      "id": 29,
+      "name": "Station 29",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.0,
+          1.47
+        ]
+      }
+    },
+    {
+      "id": 30,
+      "name": "Station 30",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.0,
+          1.63
+        ]
+      }
+    },
+    {
+      "id": 31,
+      "name": "Station 31",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9.0,
+          1.78
+        ]
+      }
+    },
+    {
+      "id": 32,
+      "name": "Station 32",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          7.33,
+          1.03
+        ]
+      }
+    },
+    {
+      "id": 33,
+      "name": "Station 33",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9.33,
+          1.84
+        ]
+      }
+    },
+    {
+      "id": 34,
+      "name": "Station 34",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9.0,
+          1.78
+        ]
+      }
+    },
+    {
+      "id": 35,
+      "name": "Station 35",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.0,
+          1.08
+        ]
+      }
+    },
+    {
+      "id": 36,
+      "name": "Station 36",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.33,
+          1.03
+        ]
+      }
+    },
+    {
+      "id": 37,
+      "name": "Station 37",
+      "buffer_capacity": 6,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          1.84
+        ]
+      }
+    },
+    {
+      "id": 38,
+      "name": "Station 38",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.33,
+          1.31
+        ]
+      }
+    },
+    {
+      "id": 39,
+      "name": "Station 39",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          7.33,
+          1.03
+        ]
+      }
+    },
+    {
+      "id": 40,
+      "name": "Station 40",
+      "buffer_capacity": 4,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8.67,
+          2.05
+        ]
+      }
+    }
+  ],
+  "arcs": [
+    {
+      "tail": 1,
+      "head": 2,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9,
+          1.24
+        ]
+      }
+    },
+    {
+      "tail": 2,
+      "head": 3,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          0.59
+        ]
+      }
+    },
+    {
+      "tail": 3,
+      "head": 4,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          12,
+          0.92
+        ]
+      }
+    },
+    {
+      "tail": 4,
+      "head": 5,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          0.78
+        ]
+      }
+    },
+    {
+      "tail": 5,
+      "head": 6,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1.1
+        ]
+      }
+    },
+    {
+      "tail": 6,
+      "head": 7,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          12,
+          0.79
+        ]
+      }
+    },
+    {
+      "tail": 7,
+      "head": 8,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          1.16
+        ]
+      }
+    },
+    {
+      "tail": 8,
+      "head": 9,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          0.66
+        ]
+      }
+    },
+    {
+      "tail": 9,
+      "head": 10,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9,
+          1.03
+        ]
+      }
+    },
+    {
+      "tail": 10,
+      "head": 11,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          12,
+          0.72
+        ]
+      }
+    },
+    {
+      "tail": 11,
+      "head": 12,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          0.71
+        ]
+      }
+    },
+    {
+      "tail": 12,
+      "head": 13,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          11,
+          0.64
+        ]
+      }
+    },
+    {
+      "tail": 13,
+      "head": 14,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          12,
+          0.93
+        ]
+      }
+    },
+    {
+      "tail": 14,
+      "head": 15,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          1.26
+        ]
+      }
+    },
+    {
+      "tail": 15,
+      "head": 16,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          11,
+          0.88
+        ]
+      }
+    },
+    {
+      "tail": 16,
+      "head": 17,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          1.18
+        ]
+      }
+    },
+    {
+      "tail": 17,
+      "head": 18,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9,
+          0.95
+        ]
+      }
+    },
+    {
+      "tail": 18,
+      "head": 19,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1.34
+        ]
+      }
+    },
+    {
+      "tail": 19,
+      "head": 20,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          12,
+          1.42
+        ]
+      }
+    },
+    {
+      "tail": 20,
+      "head": 21,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9,
+          0.56
+        ]
+      }
+    },
+    {
+      "tail": 21,
+      "head": 22,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9,
+          0.63
+        ]
+      }
+    },
+    {
+      "tail": 22,
+      "head": 23,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9,
+          1.43
+        ]
+      }
+    },
+    {
+      "tail": 23,
+      "head": 24,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          0.94
+        ]
+      }
+    },
+    {
+      "tail": 24,
+      "head": 25,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          1.09
+        ]
+      }
+    },
+    {
+      "tail": 25,
+      "head": 26,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          0.73
+        ]
+      }
+    },
+    {
+      "tail": 26,
+      "head": 27,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          11,
+          0.71
+        ]
+      }
+    },
+    {
+      "tail": 27,
+      "head": 28,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          11,
+          0.69
+        ]
+      }
+    },
+    {
+      "tail": 28,
+      "head": 29,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          1.17
+        ]
+      }
+    },
+    {
+      "tail": 29,
+      "head": 30,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9,
+          0.69
+        ]
+      }
+    },
+    {
+      "tail": 30,
+      "head": 31,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          0.94
+        ]
+      }
+    },
+    {
+      "tail": 31,
+      "head": 32,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          9,
+          0.67
+        ]
+      }
+    },
+    {
+      "tail": 32,
+      "head": 33,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          1.49
+        ]
+      }
+    },
+    {
+      "tail": 33,
+      "head": 34,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          11,
+          0.65
+        ]
+      }
+    },
+    {
+      "tail": 34,
+      "head": 35,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          0.56
+        ]
+      }
+    },
+    {
+      "tail": 35,
+      "head": 36,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          8,
+          1.35
+        ]
+      }
+    },
+    {
+      "tail": 36,
+      "head": 37,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          12,
+          0.75
+        ]
+      }
+    },
+    {
+      "tail": 37,
+      "head": 38,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          12,
+          1.02
+        ]
+      }
+    },
+    {
+      "tail": 38,
+      "head": 39,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          11,
+          0.63
+        ]
+      }
+    },
+    {
+      "tail": 39,
+      "head": 40,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          12,
+          1.5
+        ]
+      }
+    },
+    {
+      "tail": 40,
+      "head": 1,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1.38
+        ]
+      }
+    }
+  ]
+}

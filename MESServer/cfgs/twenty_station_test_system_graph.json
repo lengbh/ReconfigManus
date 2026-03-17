@@ -1,0 +1,486 @@
+{
+  "vertices": [
+    {
+      "id": 1,
+      "name": "Station 1",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "name": "Station 2",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "name": "Station 3",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "name": "Station 4",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "name": "Station 5",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "name": "Station 6",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "name": "Station 7",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "name": "Station 8",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "name": "Station 9",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "name": "Station 10",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "name": "Station 11",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "name": "Station 12",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "name": "Station 13",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "name": "Station 14",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 15,
+      "name": "Station 15",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "name": "Station 16",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "name": "Station 17",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "name": "Station 18",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "name": "Station 19",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "name": "Station 20",
+      "buffer_capacity": 5,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [
+          5,
+          10,
+          8
+        ]
+      }
+    }
+  ],
+  "arcs": [
+    {
+      "tail": 1,
+      "head": 2,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 2,
+      "head": 3,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 3,
+      "head": 4,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 4,
+      "head": 5,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 5,
+      "head": 6,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 6,
+      "head": 7,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 7,
+      "head": 8,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 8,
+      "head": 9,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 9,
+      "head": 10,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 10,
+      "head": 11,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 11,
+      "head": 12,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 12,
+      "head": 13,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 13,
+      "head": 14,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 14,
+      "head": 15,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 15,
+      "head": 16,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 16,
+      "head": 17,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 17,
+      "head": 18,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 18,
+      "head": 19,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 19,
+      "head": 20,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    },
+    {
+      "tail": 20,
+      "head": 1,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [
+          10,
+          1
+        ]
+      }
+    }
+  ]
+}

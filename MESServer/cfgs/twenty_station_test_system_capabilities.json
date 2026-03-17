@@ -1,0 +1,124 @@
+{
+  "stations": [
+    {
+      "id": 1,
+      "name": "Station 1",
+      "process_capability": 1,
+      "is_order_assigning_station": true
+    },
+    {
+      "id": 2,
+      "name": "Station 2",
+      "process_capability": 2,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 3,
+      "name": "Station 3",
+      "process_capability": 3,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 4,
+      "name": "Station 4",
+      "process_capability": 4,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 5,
+      "name": "Station 5",
+      "process_capability": 5,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 6,
+      "name": "Station 6",
+      "process_capability": 6,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 7,
+      "name": "Station 7",
+      "process_capability": 7,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 8,
+      "name": "Station 8",
+      "process_capability": 8,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 9,
+      "name": "Station 9",
+      "process_capability": 9,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 10,
+      "name": "Station 10",
+      "process_capability": 10,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 11,
+      "name": "Station 11",
+      "process_capability": 11,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 12,
+      "name": "Station 12",
+      "process_capability": 12,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 13,
+      "name": "Station 13",
+      "process_capability": 13,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 14,
+      "name": "Station 14",
+      "process_capability": 14,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 15,
+      "name": "Station 15",
+      "process_capability": 15,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 16,
+      "name": "Station 16",
+      "process_capability": 16,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 17,
+      "name": "Station 17",
+      "process_capability": 17,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 18,
+      "name": "Station 18",
+      "process_capability": 18,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 19,
+      "name": "Station 19",
+      "process_capability": 19,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 20,
+      "name": "Station 20",
+      "process_capability": 20,
+      "is_order_assigning_station": false
+    }
+  ]
+}
