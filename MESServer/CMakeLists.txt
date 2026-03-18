@@ -10,6 +10,10 @@ add_executable(${PROJECT_NAME} main.cpp
         ProductManager.cpp
 )
 
+add_executable(GraphRender graph_to_image_main.cpp
+        GraphManager.cpp
+)
+
 # copy config files to working dir
 file(GLOB CFG_FILES "cfgs/*")
 
@@ -24,12 +28,14 @@ endforeach()
 # nlohmann::json
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(GraphRender PRIVATE nlohmann_json::nlohmann_json)
 
 
 # boost
 set(Boost_USE_MULTITHREAD ON)
 find_package(Boost REQUIRED)
 target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(GraphRender PRIVATE ${Boost_INCLUDE_DIRS})
 if (WIN32)
     set_target_properties(TCPConn PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_definitions(-D_WIN32_WINNT=0x0A00)
@@ -40,6 +46,7 @@ endif ()
 
 # TCPConn
 target_include_directories(${PROJECT_NAME} PRIVATE ${ROOT_DIR}/TCPConn)
+target_include_directories(GraphRender PRIVATE ${ROOT_DIR}/TCPConn)
 
 if (TARGET TCPConn)
     target_link_libraries(${PROJECT_NAME} PRIVATE TCPConn)
