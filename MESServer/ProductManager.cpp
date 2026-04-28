@@ -8,19 +8,13 @@
 
 using nlohmann::json;
 
-Product::Product(const json& products, uint8_t product_type)
+Product::Product(const json& product_json)
 {
     // TODO check validity of the file
-    for (const auto & product : products["products"])
-    {
-        // Only reading one type of product for now
-        if (product["product_type"] == product_type)
-        {
-            product["product_name"].get_to(product_name);
-            for (const auto & process : product["processes"])
-                processes.push_back(process["process_id"]);
-        }
-    }
+    product_json["product_type"].get_to(product_type);
+    product_json["product_name"].get_to(product_name);
+    for (const auto & process : product_json["processes"])
+        processes.push_back(process["process_id"]);
 }
 
 bool Product::GetFirstProcess(ST_ProcessInfo& out) const

@@ -19,7 +19,7 @@ class ProcessManager
 public:
     friend class MESServer;
 
-    ProcessManager(const std::shared_ptr<MESServer>& mes_server_ptr, const json & station_cfg, const json & products_cfg, uint8_t product_type);
+    ProcessManager(const std::shared_ptr<MESServer>& mes_server_ptr, const json & station_cfg, const json & products_cfg);
     ~ProcessManager() = default;
 
     bool IsOrderAssigningStation(uint32_t station_id) const;
@@ -31,14 +31,17 @@ public:
     bool FindStationsForProcess(const ST_ProcessInfo & process, std::list<uint32_t> & out_stations) const;
 
     uint32_t GetDefaultReturningStation() const;
+    bool HasProduct(uint8_t product_type) const;
 
 protected:
+    const Product * GetProduct(uint8_t product_type) const;
+
     std::shared_ptr<MESServer> mes_server_;
 
     std::list<uint32_t> order_assigning_stations_;
 
     std::unordered_map<uint32_t, std::list<ST_ProcessInfo>> station_process_map_;
-    std::unique_ptr<Product> product_;
+    std::unordered_map<uint8_t, Product> products_;
 };
 
 

@@ -1,3 +1,7 @@
+*.dot
+/MESServer/cfgs/*.pdf
+
+
 # Compiled Object files
 **/.DS_Store
 *.slo

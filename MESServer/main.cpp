@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     std::string system_graph_file;
     std::string system_capabilities_file;
     std::string products_file;
-    uint8_t product_type;
+    json startup_order_batches = json::array();
 
     // Load MES server config (bind port)
     json j_cfg;
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
         j_cfg["production_system"]["graph_file"].get_to(system_graph_file);
         j_cfg["production_system"]["capabilities_file"].get_to(system_capabilities_file);
         j_cfg["product_info"]["products_file"].get_to(products_file);
-        j_cfg["product_info"]["product_type"].get_to(product_type);
+        startup_order_batches = j_cfg["product_info"].value("startup_order_batches", json::array());
     } catch (const std::exception& e) {
         std::cout << "Configuration file parsing failed (" << cfg_file << "):\n" << e.what();
         return 1;
@@ -62,9 +62,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    auto server = std::make_unique<MESServer>(bind_port, j_graph, j_capabilities, j_products, product_type);
-    // TODO take input from sim_engine, and decide if to create infinity if ending condition is on time
-    server->CreateOrderBatch(2000);
+    auto server = std::make_unique<MESServer>(bind_port, j_graph, j_capabilities, j_products);
+    for (const auto & batch_cfg : startup_order_batches)
+    {
+        const auto count = batch_cfg["count"].get<uint32_t>();
+        const auto product_type = batch_cfg["product_type"].get<uint8_t>();
+        server->CreateOrderBatch(count, product_type);
+    }
 
     std::cout << "MES Server started at port: " << bind_port << "\n";
     server->Start();

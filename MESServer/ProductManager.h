@@ -17,7 +17,7 @@ using json = nlohmann::json;
 class Product
 {
 public:
-    explicit Product(const json & products, uint8_t product_type);
+    explicit Product(const json & product_json);
     ~Product() = default;
 
     bool GetFirstProcess(ST_ProcessInfo & out) const;

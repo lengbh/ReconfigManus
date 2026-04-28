@@ -7,7 +7,7 @@
 #include "MESServer.h"
 #include <algorithm>
 
-ProcessManager::ProcessManager(const std::shared_ptr<MESServer>& mes_server_ptr, const json& station_cfg, const json & products_cfg, uint8_t product_type)
+ProcessManager::ProcessManager(const std::shared_ptr<MESServer>& mes_server_ptr, const json& station_cfg, const json & products_cfg)
 {
     // TODO check validity of the file
     INFO_MSG("Loading station process configuration...");
@@ -24,8 +24,12 @@ ProcessManager::ProcessManager(const std::shared_ptr<MESServer>& mes_server_ptr,
             order_assigning_stations_.push_back(station_id);
     }
 
-    // Product
-    product_ = std::make_unique<Product>(products_cfg, product_type);
+    INFO_MSG("Loading product configuration...");
+    for (const auto & product_json : products_cfg["products"])
+    {
+        Product product(product_json);
+        products_.emplace(product.product_type, std::move(product));
+    }
 
     // MES
     mes_server_ = mes_server_ptr;
@@ -47,11 +51,17 @@ bool ProcessManager::GetNextProcessToExecute(const uint32_t order_id, ST_Process
         ERROR_MSG("[Process] order id does not exist");
         return false;
     }
+    const auto * product = GetProduct(order.product_type);
+    if (product == nullptr)
+    {
+        ERROR_MSG("[Process] product type {} does not exist", order.product_type);
+        return false;
+    }
     // Execution not started, return the first process
     if (order.executed_processes.empty())
     {
         ST_ProcessInfo process;
-        if (!product_->GetFirstProcess(process))
+        if (!product->GetFirstProcess(process))
         {
             ERROR_MSG("[Process] First process does not exist");
             return false;
@@ -61,7 +71,7 @@ bool ProcessManager::GetNextProcessToExecute(const uint32_t order_id, ST_Process
     }
     // Execution ongoing
     std::vector<ST_ProcessInfo> remaining_process;
-    if (!product_->GetRemainingProcesses(order, remaining_process))
+    if (!product->GetRemainingProcesses(order, remaining_process))
     {
         INFO_MSG("[Process] Remaining process does not exist");
         return false;
@@ -115,4 +125,17 @@ bool ProcessManager::FindStationsForProcess(const ST_ProcessInfo& process, std::
 uint32_t ProcessManager::GetDefaultReturningStation() const
 {
     return order_assigning_stations_.front();
+}
+
+bool ProcessManager::HasProduct(const uint8_t product_type) const
+{
+    return products_.contains(product_type);
+}
+
+const Product * ProcessManager::GetProduct(const uint8_t product_type) const
+{
+    const auto it = products_.find(product_type);
+    if (it == products_.end())
+        return nullptr;
+    return &it->second;
 }

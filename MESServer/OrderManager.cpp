@@ -10,8 +10,16 @@ uint32_t OrderManager::CreateNewOrder(uint8_t product_type)
 {
     const uint32_t new_order_id = ++cur_order_id_;
     order_pool_[new_order_id] = Order{ new_order_id, product_type, UINT32_MAX, ORDER_WAIT };
-    waiting_orders_.push(new_order_id);
     return new_order_id;
+}
+
+void OrderManager::AddProductionTarget(const uint8_t product_type, const uint32_t count)
+{
+    if (count == 0)
+        return;
+
+    remaining_order_targets_[product_type] += count;
+    total_remaining_order_targets_ += count;
 }
 
 bool OrderManager::GetOrderByID(uint32_t order_id, Order& order) const
@@ -27,7 +35,7 @@ bool OrderManager::GetOrderByID(uint32_t order_id, Order& order) const
 
 size_t OrderManager::GetWaitOrderNum() const
 {
-    return waiting_orders_.size();
+    return total_remaining_order_targets_;
 }
 
 bool OrderManager::IsOrderDone(uint32_t order_id)
@@ -48,8 +56,32 @@ bool OrderManager::TryAssignNewOrderToTray(uint32_t tray_id, uint32_t& order_id)
         INFO_MSG("[ORDER] No order to be assigned");
         return false;
     }
-    order_id = waiting_orders_.front();
-    waiting_orders_.pop();
+
+    std::uniform_int_distribution<uint32_t> distribution(1, total_remaining_order_targets_);
+    uint32_t pick = distribution(rng_);
+    uint8_t selected_product_type = UINT8_MAX;
+    for (auto & [product_type, remaining_count] : remaining_order_targets_)
+    {
+        if (remaining_count == 0)
+            continue;
+
+        if (pick <= remaining_count)
+        {
+            selected_product_type = product_type;
+            --remaining_count;
+            --total_remaining_order_targets_;
+            break;
+        }
+        pick -= remaining_count;
+    }
+
+    if (selected_product_type == UINT8_MAX)
+    {
+        ERROR_MSG("[ORDER] Failed to select product type for new order");
+        return false;
+    }
+
+    order_id = CreateNewOrder(selected_product_type);
     running_orders_.push_back(order_id);
 
     auto it = order_pool_.find(order_id);
@@ -61,7 +93,7 @@ bool OrderManager::TryAssignNewOrderToTray(uint32_t tray_id, uint32_t& order_id)
     it->second.tray_id = tray_id;
     it->second.status = ORDER_EXECUTING;
 
-    INFO_MSG("[ORDER] Order {} assigned to tray {}", order_id, tray_id);
+    INFO_MSG("[ORDER] Order {} of product type {} assigned to tray {}", order_id, selected_product_type, tray_id);
 
     return true;
 }

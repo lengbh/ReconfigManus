@@ -16,7 +16,7 @@ class MESServer : public TCPConn::ITCPServer<TCPConn::TCPMsg>
     friend class ProcessManager;
     friend class OrderManager;
 public:
-    MESServer(uint16_t port, const json & j_graph, const json & j_capabilities, const json & j_products, uint8_t product_type);
+    MESServer(uint16_t port, const json & j_graph, const json & j_capabilities, const json & j_products);
 
     ~MESServer() override = default;
 
@@ -36,7 +36,7 @@ public:
 
     ST_TrayInfo & GetTrayInfo(uint32_t tray_id);
 
-    void CreateOrderBatch(uint32_t num) const;
+    void CreateOrderBatch(uint32_t num, uint8_t product_type) const;
 
 protected:
     std::unique_ptr<GraphManager> graph_manager_;

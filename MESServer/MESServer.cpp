@@ -7,12 +7,12 @@
 #include "mes_server_def.h"
 #include <memory>
 
-MESServer::MESServer(uint16_t port, const json& j_graph, const json& j_capabilities, const json& j_products, uint8_t product_type)
+MESServer::MESServer(uint16_t port, const json& j_graph, const json& j_capabilities, const json& j_products)
     : ITCPServer<TCPConn::TCPMsg>(port)
 {
     graph_manager_ = std::make_unique<GraphManager>(j_graph);
     graph_manager_->WriteOutDotFile("system_graph.dot");
-    process_manager_ = std::make_unique<ProcessManager>(std::shared_ptr<MESServer>(this), j_capabilities, j_products, product_type);
+    process_manager_ = std::make_unique<ProcessManager>(std::shared_ptr<MESServer>(this), j_capabilities, j_products);
     order_manager_ = std::make_unique<OrderManager>();
 }
 
@@ -288,9 +288,12 @@ ST_TrayInfo& MESServer::GetTrayInfo(uint32_t tray_id)
     return ins_it->second;
 }
 
-void MESServer::CreateOrderBatch(const uint32_t num) const
+void MESServer::CreateOrderBatch(const uint32_t num, const uint8_t product_type) const
 {
-    auto product_type = process_manager_->product_->product_type;
-    for (int i = 0 ; i < num ; i ++)
-        order_manager_->CreateNewOrder(product_type);
+    if (!process_manager_->HasProduct(product_type))
+    {
+        ERROR_MSG("[MES] Cannot create order batch: product type {} is not configured", product_type);
+        return;
+    }
+    order_manager_->AddProductionTarget(product_type, num);
 }

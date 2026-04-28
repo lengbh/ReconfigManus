@@ -1,0 +1,22 @@
+{
+  "mes_service": {
+    "bind_port": 6789
+  },
+  "production_system": {
+    "graph_file": "lucr_scenario_3.json",
+    "capabilities_file": "lucr_scenario_3_capabilities.json"
+  },
+  "product_info": {
+    "products_file": "products.json",
+    "startup_order_batches": [
+      {
+        "product_type": 301,
+        "count": 1400
+      },
+      {
+        "product_type": 302,
+        "count": 600
+      }
+    ]
+  }
+}

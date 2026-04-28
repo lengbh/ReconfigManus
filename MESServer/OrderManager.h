@@ -8,7 +8,7 @@
 #include <atomic>
 #include <list>
 #include <memory>
-#include <queue>
+#include <random>
 #include <unordered_map>
 #include "mes_server_def.h"
 
@@ -30,6 +30,7 @@ public:
     ~OrderManager() = default;
 
     uint32_t CreateNewOrder(uint8_t product_type);
+    void AddProductionTarget(uint8_t product_type, uint32_t count);
 
     bool GetOrderByID(uint32_t order_id, Order& order) const;
     size_t GetWaitOrderNum() const;
@@ -43,10 +44,12 @@ protected:
 
     std::atomic<uint32_t> cur_order_id_ = 0;
     std::unordered_map<uint32_t, Order> order_pool_;
+    std::unordered_map<uint8_t, uint32_t> remaining_order_targets_;
+    uint32_t total_remaining_order_targets_ = 0;
 
-    std::queue<uint32_t> waiting_orders_;
     std::list<uint32_t> running_orders_;
     std::list<uint32_t> finished_orders_;
+    mutable std::mt19937 rng_{std::random_device{}()};
 
 };
 
