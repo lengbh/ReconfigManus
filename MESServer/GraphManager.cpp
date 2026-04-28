@@ -23,6 +23,7 @@ GraphManager::GraphManager(const json & graph_model)
         ST_VertexLabel vertex_label{};
         v["id"].get_to(vertex_label.id);
         v["name"].get_to(vertex_label.name);
+        vertex_label.role = VertexRoleFromString(v.value("vertex_role", "internal"));
         v["buffer_capacity"].get_to(vertex_label.buffer_capacity);
         {
             std::string tstr;
@@ -63,6 +64,16 @@ bool GraphManager::GetVertexProperties(uint32_t id, ST_VertexLabel& label) const
         return false;
 
     label = (*graph_)[it->second];
+    return true;
+}
+
+bool GraphManager::GetVertexRole(uint32_t id, VertexRole& role) const
+{
+    auto it = vertex_map_.find(id);
+    if (it == vertex_map_.end())
+        return false;
+
+    role = (*graph_)[it->second].role;
     return true;
 }
 
@@ -222,10 +233,13 @@ void GraphManager::AddTimeDistToAllPathsToVertex(uint32_t vertex_id, bool add_or
     if (it == vertex_map_.end())
         return;
 
+    const auto role = (*graph_)[it->second].role;
+
     std::list<uint32_t> incoming_vertices;
     if (!GetIncomingNeighborVertices(vertex_id, incoming_vertices))
     {
-        ERROR_MSG("[GRAPH] No incoming neighbor vertices");
+        if (role != VertexRole::source)
+            ERROR_MSG("[GRAPH] No incoming neighbor vertices");
         return;
     }
 
@@ -315,6 +329,7 @@ void GraphManager::WriteOutDotFile(const std::string& filename) const
             os << std::fixed << std::setprecision(1);
             os << " [shape=box, style=filled, fillcolor=lightyellow, color=black, penwidth=1, label=\"" << 'S' << lbl.id;
             if (!lbl.name.empty()) os << ": " << lbl.name;
+            os << "\\nrole: " << VertexRoleToString(lbl.role);
             os << "\\nmax capacity: " << static_cast<int>(lbl.buffer_capacity)
                << "\\ns" << lbl.id << ": " << TimeDistTypeToString(td.type) << " (";
             for (size_t i = 0; i < td.parameters.size(); ++i) {
@@ -346,5 +361,3 @@ void GraphManager::WriteOutDotFile(const std::string& filename) const
     // `dot -Tpdf xxx.dot -o xxx.pdf`
     boost::write_graphviz(out, *graph_, VertexWriter{graph_.get()}, EdgeWriter{graph_.get()});
 }
-
-

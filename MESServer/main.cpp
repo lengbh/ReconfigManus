@@ -63,7 +63,8 @@ int main(int argc, char* argv[]) {
     }
 
     auto server = std::make_unique<MESServer>(bind_port, j_graph, j_capabilities, j_products, product_type);
-    server->CreateOrderBatch(100);
+    // TODO take input from sim_engine, and decide if to create infinity if ending condition is on time
+    server->CreateOrderBatch(2000);
 
     std::cout << "MES Server started at port: " << bind_port << "\n";
     server->Start();

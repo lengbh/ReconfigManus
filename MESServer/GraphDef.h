@@ -15,6 +15,31 @@ enum TimeDistType
     uniform, normal, weibull, exponential, constant, triangular
 };
 
+enum class VertexRole   // TODO this could be handled elsewhere
+{
+    source,
+    internal,
+    sink
+};
+
+inline VertexRole VertexRoleFromString(const std::string& s) noexcept
+{
+    if (s == "source") return VertexRole::source;
+    if (s == "sink") return VertexRole::sink;
+    return VertexRole::internal;
+}
+
+inline const char* VertexRoleToString(VertexRole role) noexcept
+{
+    switch (role)
+    {
+        case VertexRole::source: return "source";
+        case VertexRole::sink: return "sink";
+        case VertexRole::internal: return "internal";
+        default: return "internal";
+    }
+}
+
 inline TimeDistType TimeDistTypeFromString(const std::string& s) noexcept
 {
     if (s == "uniform") return TimeDistType::uniform;
@@ -196,6 +221,7 @@ struct ST_VertexLabel
 {
     uint32_t id{};
     std::string name;
+    VertexRole role{VertexRole::internal};
     uint8_t buffer_capacity;
     ST_TimeDist service_time_dist;
 };

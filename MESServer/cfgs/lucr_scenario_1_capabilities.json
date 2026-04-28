@@ -1,0 +1,34 @@
+{
+  "stations": [
+    {
+      "id": 1,
+      "name": "Station 1a - Component X Sub-Assembly",
+      "process_capability": 1,
+      "is_order_assigning_station": true
+    },
+    {
+      "id": 2,
+      "name": "Station 2 - Main Assembly Merge",
+      "process_capability": 2,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 3,
+      "name": "Station 3 - Quality Control",
+      "process_capability": 3,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 4,
+      "name": "Station 4 - Rework",
+      "process_capability": 4,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 5,
+      "name": "Station 5 - Final Output",
+      "process_capability": 5,
+      "is_order_assigning_station": false
+    }
+  ]
+}

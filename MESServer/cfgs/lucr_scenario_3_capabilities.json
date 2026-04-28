@@ -1,0 +1,46 @@
+{
+  "stations": [
+    {
+      "id": 1,
+      "name": "F1 - Input Preparation",
+      "process_capability": 1,
+      "is_order_assigning_station": true
+    },
+    {
+      "id": 2,
+      "name": "F2 - Pre-Processing",
+      "process_capability": 2,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 3,
+      "name": "F3 - M3a Bottleneck Machine",
+      "process_capability": 3,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 4,
+      "name": "F3 - M3b Bottleneck Machine",
+      "process_capability": 3,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 5,
+      "name": "F3 - M3c Bottleneck Machine",
+      "process_capability": 3,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 6,
+      "name": "F4 - Secondary Processing",
+      "process_capability": 4,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 7,
+      "name": "F5 - Final Output",
+      "process_capability": 5,
+      "is_order_assigning_station": false
+    }
+  ]
+}

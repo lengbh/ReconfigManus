@@ -38,6 +38,27 @@
           "process_id": 1
         }
       ]
+    },
+    {
+      "product_type": 101,
+      "product_name": "Lucr Scenario 1 Product",
+      "processes": [
+        {
+          "process_id": 1
+        },
+        {
+          "process_id": 2
+        },
+        {
+          "process_id": 3
+        },
+        {
+          "process_id": 4
+        },
+        {
+          "process_id": 5
+        }
+      ]
     }
   ]
 }

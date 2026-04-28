@@ -30,6 +30,7 @@ public:
     ~GraphManager() = default;
 
     bool GetVertexProperties(uint32_t id, ST_VertexLabel& label) const;
+    bool GetVertexRole(uint32_t id, VertexRole& role) const;
     bool GetVertexTimeDist(uint32_t id, ST_TimeDist& dist) const;
     bool SetVertexTimeDist(uint32_t id, const ST_TimeDist& dist);
 

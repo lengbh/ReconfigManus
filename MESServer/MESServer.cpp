@@ -257,17 +257,17 @@ bool MESServer::PlanRouteToProcessStation(uint32_t current_station, const ST_Pro
 
 uint32_t MESServer::CalculateDefaultNextStation(const uint32_t& current_station) const
 {
-    // Used for default releasing response when no additional information can be derived
-    // By default move to default returning station
-    auto returning_station = process_manager_->GetDefaultReturningStation();
-    if (current_station != returning_station)
+    // Used for default releasing response when no additional information can be derived.
+    VertexRole role = VertexRole::internal;
+    if (!graph_manager_->GetVertexRole(current_station, role))
     {
-        uint32_t next_station;
-        if (!FindNextStationToTargetStation(current_station, returning_station, next_station))
-            return UINT32_MAX;
-        return next_station;
+        ERROR_MSG("[Graph] Cannot determine role for station {}", current_station);
+        return UINT32_MAX;
     }
-    // if current station is the default returning station, direct to an arbitrary connected station
+
+    if (role == VertexRole::sink)
+        return UINT32_MAX;
+
     std::list<uint32_t> outgoing_neighbors;
     if (!graph_manager_->GetOutgoingNeighborVertices(current_station, outgoing_neighbors))
     {
