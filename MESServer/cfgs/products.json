@@ -40,6 +40,78 @@
       ]
     },
     {
+      "product_type": 101,
+      "product_name": "Lucr Scenario 1 Product",
+      "processes": [
+        {
+          "process_id": 1
+        },
+        {
+          "process_id": 2
+        },
+        {
+          "process_id": 3
+        },
+        {
+          "process_id": 4
+        },
+        {
+          "process_id": 5
+        }
+      ]
+    },
+    {
+      "product_type": 201,
+      "product_name": "Job Shop Product 1234",
+      "processes": [
+        {
+          "process_id": 1
+        },
+        {
+          "process_id": 2
+        },
+        {
+          "process_id": 3
+        },
+        {
+          "process_id": 4
+        }
+      ]
+    },
+    {
+      "product_type": 202,
+      "product_name": "Job Shop Product 154",
+      "processes": [
+        {
+          "process_id": 1
+        },
+        {
+          "process_id": 5
+        },
+        {
+          "process_id": 4
+        }
+      ]
+    },
+    {
+      "product_type": 203,
+      "product_name": "Job Shop Product 3231",
+      "processes": [
+        {
+          "process_id": 3
+        },
+        {
+          "process_id": 2
+        },
+        {
+          "process_id": 3
+        },
+        {
+          "process_id": 1
+        }
+      ]
+    },
+    {
       "product_type": 301,
       "product_name": "Lucr Scenario 3 Product",
       "processes": [

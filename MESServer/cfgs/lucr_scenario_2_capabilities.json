@@ -1,0 +1,34 @@
+{
+  "stations": [
+    {
+      "id": 1,
+      "name": "D1 - Functional Department 1",
+      "process_capability": 1,
+      "is_order_assigning_station": true
+    },
+    {
+      "id": 2,
+      "name": "D2 - Functional Department 2",
+      "process_capability": 2,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 3,
+      "name": "D3 - Functional Department 3",
+      "process_capability": 3,
+      "is_order_assigning_station": true
+    },
+    {
+      "id": 4,
+      "name": "D4 - Functional Department 4",
+      "process_capability": 4,
+      "is_order_assigning_station": false
+    },
+    {
+      "id": 5,
+      "name": "D5 - Specialized Low-Utilization Department",
+      "process_capability": 5,
+      "is_order_assigning_station": false
+    }
+  ]
+}

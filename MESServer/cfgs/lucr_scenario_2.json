@@ -1,0 +1,117 @@
+{
+  "vertices": [
+    {
+      "id": 1,
+      "name": "D1 - Functional Department 1",
+      "vertex_role": "source",
+      "buffer_capacity": 2,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [42.0, 8.0]
+      }
+    },
+    {
+      "id": 2,
+      "name": "D2 - Functional Department 2",
+      "vertex_role": "internal",
+      "buffer_capacity": 3,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [55.0, 10.0]
+      }
+    },
+    {
+      "id": 3,
+      "name": "D3 - Functional Department 3",
+      "vertex_role": "source",
+      "buffer_capacity": 2,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [48.0, 9.0]
+      }
+    },
+    {
+      "id": 4,
+      "name": "D4 - Functional Department 4",
+      "vertex_role": "internal",
+      "buffer_capacity": 2,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [60.0, 11.0]
+      }
+    },
+    {
+      "id": 5,
+      "name": "D5 - Specialized Low-Utilization Department",
+      "vertex_role": "sink",
+      "buffer_capacity": 1,
+      "service_time_distribution": {
+        "type": "normal",
+        "parameters": [85.0, 14.0]
+      }
+    }
+  ],
+  "arcs": [
+    {
+      "tail": 1,
+      "head": 2,
+      "routing_probability": 0.97,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [9.0, 1.5]
+      }
+    },
+    {
+      "tail": 1,
+      "head": 5,
+      "routing_probability": 0.03,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [16.0, 3.0]
+      }
+    },
+    {
+      "tail": 2,
+      "head": 3,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [8.0, 1.4]
+      }
+    },
+    {
+      "tail": 3,
+      "head": 1,
+      "routing_probability": 0.47,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [11.0, 2.0]
+      }
+    },
+    {
+      "tail": 3,
+      "head": 2,
+      "routing_probability": 0.45,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [7.0, 1.2]
+      }
+    },
+    {
+      "tail": 3,
+      "head": 4,
+      "routing_probability": 0.08,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [13.0, 2.2]
+      }
+    },
+    {
+      "tail": 5,
+      "head": 4,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [10.0, 1.8]
+      }
+    }
+  ]
+}
