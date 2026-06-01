@@ -35,9 +35,10 @@ std::string ShellQuote(const std::string& s)
 
 int main(int argc, char* argv[])
 {
-    if (argc != 3)
+    if (argc != 3 && argc != 4)
     {
-        std::cerr << "Usage: GraphRender <graph_json_file> <png|pdf>\n";
+        std::cerr << "Usage: GraphRender <graph_json_file> <png|pdf> [-s]\n";
+        std::cerr << "  -s: symbolic/small render, showing only vertex names and no edge details\n";
         return 1;
     }
 
@@ -47,6 +48,18 @@ int main(int argc, char* argv[])
     {
         std::cerr << "Unsupported format: " << argv[2] << ". Use png or pdf.\n";
         return 1;
+    }
+
+    bool symbolic = false;
+    if (argc == 4)
+    {
+        const std::string flag = ToLower(argv[3]);
+        if (flag != "-s")
+        {
+            std::cerr << "Unsupported flag: " << argv[3] << ". Use -s for symbolic/small render.\n";
+            return 1;
+        }
+        symbolic = true;
     }
 
     json j_graph;
@@ -73,7 +86,7 @@ int main(int argc, char* argv[])
     const std::filesystem::path output_path = base_path.string() + "." + format;
 
     GraphManager graph_manager(j_graph);
-    graph_manager.WriteOutDotFile(dot_path.string());
+    graph_manager.WriteOutDotFile(dot_path.string(), symbolic);
 
     const std::string command = "dot -T" + format + " " + ShellQuote(dot_path.string()) +
         " -o " + ShellQuote(output_path.string());

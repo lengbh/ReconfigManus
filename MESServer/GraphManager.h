@@ -46,7 +46,7 @@ public:
 
     bool FindShortestPath(uint32_t tail, uint32_t head, std::vector<uint32_t>& out_path, float & out_length) const;
 
-    void WriteOutDotFile(const std::string& filename) const;
+    void WriteOutDotFile(const std::string& filename, bool symbolic = false) const;
 
 
 private:

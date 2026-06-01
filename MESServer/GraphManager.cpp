@@ -306,7 +306,7 @@ bool GraphManager::FindShortestPath(uint32_t tail, uint32_t head, std::vector<ui
     return true;
 }
 
-void GraphManager::WriteOutDotFile(const std::string& filename) const
+void GraphManager::WriteOutDotFile(const std::string& filename, bool symbolic) const
 {
     std::ofstream out(filename);
     if (!out.is_open())
@@ -322,8 +322,17 @@ void GraphManager::WriteOutDotFile(const std::string& filename) const
     // TODO rewrite with std::format or format
     struct VertexWriter {
         const Graph* g;
+        bool symbolic;
         void operator()(std::ostream& os, const VD& v) const {
             const auto& lbl = (*g)[v];
+            if (symbolic)
+            {
+                os << " [shape=box, style=filled, fillcolor=lightyellow, color=black, penwidth=1, label=\"";
+                os << 'S' << lbl.id;
+                os << "\"]";
+                return;
+            }
+
             const auto& td = lbl.service_time_dist;
             const double mean = lbl.service_time_dist.expected_value();
             os << std::fixed << std::setprecision(1);
@@ -342,7 +351,14 @@ void GraphManager::WriteOutDotFile(const std::string& filename) const
 
     struct EdgeWriter {
         const Graph* g;
+        bool symbolic;
         void operator()(std::ostream& os, const ED& e) const {
+            if (symbolic)
+            {
+                os << " [color=black, penwidth=1, arrowsize=1.0]";
+                return;
+            }
+
             const auto& el = (*g)[e];
             const auto& td = el.transfer_time_dist;
             os << std::fixed << std::setprecision(1);
@@ -359,5 +375,5 @@ void GraphManager::WriteOutDotFile(const std::string& filename) const
     // Can be converted to png using commands:
     // `dot -Tpng xxx.dot -o xxx.png`
     // `dot -Tpdf xxx.dot -o xxx.pdf`
-    boost::write_graphviz(out, *graph_, VertexWriter{graph_.get()}, EdgeWriter{graph_.get()});
+    boost::write_graphviz(out, *graph_, VertexWriter{graph_.get(), symbolic}, EdgeWriter{graph_.get(), symbolic});
 }
