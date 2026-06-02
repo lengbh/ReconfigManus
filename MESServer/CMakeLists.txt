@@ -30,6 +30,9 @@ find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(GraphRender PRIVATE nlohmann_json::nlohmann_json)
 
+# MQTT communication
+target_link_libraries(${PROJECT_NAME} PRIVATE MQTTServer)
+
 
 # boost
 set(Boost_USE_MULTITHREAD ON)
@@ -37,32 +40,12 @@ find_package(Boost REQUIRED)
 target_include_directories(${PROJECT_NAME} PRIVATE ${Boost_INCLUDE_DIRS})
 target_include_directories(GraphRender PRIVATE ${Boost_INCLUDE_DIRS})
 if (WIN32)
-    set_target_properties(TCPConn PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
     add_definitions(-D_WIN32_WINNT=0x0A00)
     set(Boost_NO_WARN_NEW_VERSIONS 1)
     set(Boost_USE_STATIC_LIBS ON)
 endif ()
 
 
-# TCPConn
+# TCPConn headers are kept only for existing logging macros.
 target_include_directories(${PROJECT_NAME} PRIVATE ${ROOT_DIR}/TCPConn)
 target_include_directories(GraphRender PRIVATE ${ROOT_DIR}/TCPConn)
-
-if (TARGET TCPConn)
-    target_link_libraries(${PROJECT_NAME} PRIVATE TCPConn)
-else()
-    find_library(TCPConn_LIB
-            NAMES TCPConn libTCPConn TCPConn.lib libTCPConn.dll.a
-            HINTS
-                ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
-                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    )
-
-    if (NOT TCPConn_LIB)
-        message(FATAL_ERROR "Could not find TCPConn library, please confirm it has been built.
-        Looked in: ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}; ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}; ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-    endif()
-
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${TCPConn_LIB})
-endif()

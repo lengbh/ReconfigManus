@@ -5,66 +5,98 @@
 #include "MESServer.h"
 #include "LogMacros.h"
 #include "mes_server_def.h"
+#include <iostream>
 #include <memory>
+#include <utility>
 
-MESServer::MESServer(uint16_t port, const json& j_graph, const json& j_capabilities, const json& j_products)
-    : ITCPServer<TCPConn::TCPMsg>(port)
+namespace
+{
+const std::string MQTT_TOPIC_PREFIX = "mes_des/v1";
+
+std::string StationActionQueryTopic()
+{
+    return MQTT_TOPIC_PREFIX + "/mes/station_action_query";
+}
+
+std::string StationActionDoneQueryTopic()
+{
+    return MQTT_TOPIC_PREFIX + "/mes/station_action_done_query";
+}
+
+uint32_t GetMessageTypeFromTopic(const std::string & topic)
+{
+    if (topic == StationActionQueryTopic())
+        return MSG_STATION_ACTION_QUERY;
+    if (topic == StationActionDoneQueryTopic())
+        return MSG_STATION_ACTION_DONE_QUERY;
+    return UINT32_MAX;
+}
+
+}
+
+MESServer::MESServer(uint16_t port, const json& j_graph, const json& j_capabilities, const json& j_products,
+                     std::string broker_host)
+    : MQTTConn::IMQTTServer(port, std::move(broker_host), "mes-server")
 {
     graph_manager_ = std::make_unique<GraphManager>(j_graph);
     graph_manager_->WriteOutDotFile("system_graph.dot");
-    process_manager_ = std::make_unique<ProcessManager>(std::shared_ptr<MESServer>(this), j_capabilities, j_products);
+    process_manager_ = std::make_unique<ProcessManager>(std::shared_ptr<MESServer>(this, [](MESServer*) {}), j_capabilities, j_products);
     order_manager_ = std::make_unique<OrderManager>();
 }
 
-bool MESServer::OnClientConnectionRequest(std::shared_ptr<TCPConn::ITCPConn<TCPConn::TCPMsg>> client)
+MESServer::~MESServer()
 {
-    std::cout << "Client " << client->GetID() << " requested\n";
-    return true;
+    MQTTConn::IMQTTServer::Stop();
 }
 
-void MESServer::OnClientConnected(std::shared_ptr<TCPConn::ITCPConn<TCPConn::TCPMsg>> client)
+void MESServer::Start()
 {
-    std::cout << "Client " << client->GetID() << " connected\n";
+    if (!MQTTConn::IMQTTServer::Start())
+        return;
+    Subscribe(StationActionQueryTopic());
+    Subscribe(StationActionDoneQueryTopic());
+    INFO_MSG("[MQTT] MESServer subscribed to MES topics");
 }
 
-void MESServer::OnClientDisconnected(std::shared_ptr<TCPConn::ITCPConn<TCPConn::TCPMsg>> client)
+void MESServer::OnMessage(std::shared_ptr<MQTTConn::IMQTTConn> client, MQTTConn::MQTTMsg & msg)
 {
-    ITCPServer<TCPConn::TCPMsg>::OnClientDisconnected(client);
-}
-
-void MESServer::OnMessage(std::shared_ptr<TCPConn::ITCPConn<TCPConn::TCPMsg>> client, TCPConn::TCPMsg& msg)
-{
-    switch (msg.header.type)
+    try
     {
-        // TODO
+        (void)client;
+        const auto msg_type = GetMessageTypeFromTopic(msg.topic);
+
+        switch (msg_type)
+        {
         case MSG_STATION_ACTION_QUERY:
-            {
-                ST_StationActionQuery qry;
-                msg >> qry;
-                INFO_MSG("[MES] Action query received: workstation_id: {}, tray_id: {}", qry.workstation_id, qry.tray_id);
-                const auto rsp = OnStationActionQuery(qry);
-                TCPConn::TCPMsg rsp_msg;
-                rsp_msg.header.type = MSG_STATION_ACTION_RSP;
-                rsp_msg << rsp;
-                client->Send(rsp_msg);
-            }
+        {
+            ST_StationActionQueryFrame frame;
+            msg >> frame;
+            ST_StationActionRspFrame rsp_frame{frame.request_id, frame.reply_to, OnStationActionQuery(frame.qry)};
+            MQTTConn::MQTTMsg rsp_msg;
+            rsp_msg << rsp_frame;
+            const auto reply_client = std::make_shared<MQTTConn::IMQTTConn>(rsp_msg.topic);
+            MessageClient(reply_client, rsp_msg);
             break;
+        }
         case MSG_STATION_ACTION_DONE_QUERY:
-            {
-                ST_StationActionQuery qry;
-                msg >> qry;
-                INFO_MSG("[MES] Action done query received: workstation_id: {}, tray_id: {}", qry.workstation_id, qry.tray_id);
-                const auto rsp = OnStationActionDoneQuery(qry);
-                TCPConn::TCPMsg rsp_msg;
-                rsp_msg.header.type = MSG_STATION_ACTION_RSP;
-                rsp_msg << rsp;
-                client->Send(rsp_msg);
-            }
+        {
+            ST_StationActionDoneQueryFrame frame;
+            msg >> frame;
+            ST_StationActionRspFrame rsp_frame{frame.request_id, frame.reply_to, OnStationActionDoneQuery(frame.qry)};
+            MQTTConn::MQTTMsg rsp_msg;
+            rsp_msg << rsp_frame;
+            const auto reply_client = std::make_shared<MQTTConn::IMQTTConn>(rsp_msg.topic);
+            MessageClient(reply_client, rsp_msg);
             break;
+        }
         default:
             break;
+        }
     }
-
+    catch (const std::exception & e)
+    {
+        ERROR_MSG("[MES] MQTT request handling failed on topic {}: {}", msg.topic, e.what());
+    }
 }
 
 ST_StationActionRsp MESServer::OnStationActionQuery(const ST_StationActionQuery& qry)

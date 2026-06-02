@@ -5,27 +5,25 @@
 #ifndef RECONFIGMANUS_MESSERVER_H
 #define RECONFIGMANUS_MESSERVER_H
 
-#include "TCPServer.h"
 #include "mes_server_def.h"
 #include "GraphManager.h"
+#include "MQTTServer.h"
 #include "OrderManager.h"
 #include "ProcessManager.h"
+#include <memory>
+#include <unordered_map>
 
-class MESServer : public TCPConn::ITCPServer<TCPConn::TCPMsg>
+class MESServer : public MQTTConn::IMQTTServer
 {
     friend class ProcessManager;
     friend class OrderManager;
 public:
-    MESServer(uint16_t port, const json & j_graph, const json & j_capabilities, const json & j_products);
+    MESServer(uint16_t port, const json & j_graph, const json & j_capabilities, const json & j_products,
+              std::string broker_host = "localhost");
 
-    ~MESServer() override = default;
+    ~MESServer();
 
-    // Communication interfaces
-    bool OnClientConnectionRequest(std::shared_ptr<TCPConn::ITCPConn<TCPConn::TCPMsg>> client) override;
-    void OnClientConnected(std::shared_ptr<TCPConn::ITCPConn<TCPConn::TCPMsg>> client) override;
-    void OnClientDisconnected(std::shared_ptr<TCPConn::ITCPConn<TCPConn::TCPMsg>> client) override;
-    void OnMessage(std::shared_ptr<TCPConn::ITCPConn<TCPConn::TCPMsg>> client, TCPConn::TCPMsg& msg) override;
-
+    void Start();
 
     // Control policies
     ST_StationActionRsp OnStationActionQuery(const ST_StationActionQuery& qry);
@@ -37,6 +35,8 @@ public:
     ST_TrayInfo & GetTrayInfo(uint32_t tray_id);
 
     void CreateOrderBatch(uint32_t num, uint8_t product_type) const;
+
+    void OnMessage(std::shared_ptr<MQTTConn::IMQTTConn> client, MQTTConn::MQTTMsg & msg) override;
 
 protected:
     std::unique_ptr<GraphManager> graph_manager_;

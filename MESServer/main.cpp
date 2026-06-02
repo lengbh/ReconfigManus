@@ -11,18 +11,18 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
         cfg_file = argv[1];
     }
-    uint16_t bind_port;
+    uint16_t broker_port;
     std::string system_graph_file;
     std::string system_capabilities_file;
     std::string products_file;
     json startup_order_batches = json::array();
 
-    // Load MES server config (bind port)
+    // Load MES server config (MQTT broker port)
     json j_cfg;
     try {
         std::ifstream f_cfg(cfg_file);
         j_cfg = json::parse(f_cfg);
-        j_cfg["mes_service"]["bind_port"].get_to(bind_port);
+        j_cfg["mes_service"]["bind_port"].get_to(broker_port);
         j_cfg["production_system"]["graph_file"].get_to(system_graph_file);
         j_cfg["production_system"]["capabilities_file"].get_to(system_capabilities_file);
         j_cfg["product_info"]["products_file"].get_to(products_file);
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    auto server = std::make_unique<MESServer>(bind_port, j_graph, j_capabilities, j_products);
+    auto server = std::make_unique<MESServer>(broker_port, j_graph, j_capabilities, j_products);
     for (const auto & batch_cfg : startup_order_batches)
     {
         const auto count = batch_cfg["count"].get<uint32_t>();
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
         server->CreateOrderBatch(count, product_type);
     }
 
-    std::cout << "MES Server started at port: " << bind_port << "\n";
+    std::cout << "MES MQTT client connecting to broker port: " << broker_port << "\n";
     server->Start();
     server->Run();
 }
