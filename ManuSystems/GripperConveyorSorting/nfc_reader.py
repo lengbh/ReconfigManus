@@ -22,7 +22,7 @@ class NFCReader:
 
     def read_part_id(self, timeout=0.5):
         """Read and convert the reading results UID to part id"""
-        uid = self.read_uid(timeout=0.5)
+        uid = self.read_uid(timeout=timeout)
         if not uid:
             return None
         # Convert UID bytes to hex string
@@ -48,5 +48,3 @@ class NFCReader:
                     print("part detected:", uid)
         except KeyboardInterrupt:
             print("\nStopped by user")
-            
-nfc = NFCReader()

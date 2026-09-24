@@ -168,12 +168,3 @@ class Motor:
             self.pwm.stop()
         GPIO.cleanup()
     
-# =====================
-
-# Example usage
-
-# =====================
-
-IN1 = 17
-IN2 = 27
-motor = Motor(IN1, IN2, None)

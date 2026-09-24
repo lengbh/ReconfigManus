@@ -29,11 +29,11 @@ def main():
                 print(f"Tag detected: {uid}")
 
                 if uid % 2 == 0:
-                    print(f"Odd parts. Starting conveyor into the box...")
+                    print("Even parts. Starting conveyor into the box...")
                     motor.run_forward(CONVEYOR_SPEED)
                     time.sleep(RUN_DURATION_BOX)
                 else:
-                    print(f"Even parts. Starting conveyor out of the module...")
+                    print("Odd parts. Starting conveyor out of the module...")
                     motor.run_backward(CONVEYOR_SPEED)
                     time.sleep(RUN_DURATION_OUT)
 
