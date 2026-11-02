@@ -1,7 +1,7 @@
 import time
 from machine import Pin
 
-from nfc_reader import NFCReader
+from nfc_reader import NFCReader, uid_to_hex
 from part_uid_dict import get_part_id
 
 
@@ -9,10 +9,6 @@ SCAN_TIMEOUT = 0.3
 BLINK_ON_SECONDS = 0.15
 BLINK_OFF_SECONDS = 0.15
 REMOVAL_CONFIRMATIONS = 3
-
-
-def uid_to_hex(uid):
-    return "".join("{:02X}".format(byte) for byte in uid)
 
 
 def blink(led, count):

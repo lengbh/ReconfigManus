@@ -4,6 +4,10 @@ from machine import I2C, Pin
 from part_uid_dict import get_part_id
 
 
+def uid_to_hex(uid):
+    return "".join("{:02X}".format(byte) for byte in uid)
+
+
 class PN532Error(Exception):
     pass
 
@@ -135,8 +139,7 @@ class NFCReader:
         if not uid:
             return None
 
-        uid_hex = "".join("{:02X}".format(byte) for byte in uid)
-        return get_part_id(uid_hex)
+        return get_part_id(uid_to_hex(uid))
 
     def wait_for_part(self):
         print("Waiting for NFC part...")

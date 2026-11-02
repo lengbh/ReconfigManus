@@ -16,9 +16,18 @@ root:
 
 - `pico/main.py` as `main.py`
 - `common/part_uid_dict.py`
+- `pico/conveyor.py`
 - `pico/gripper.py`
 - `pico/motor_driver.py`
 - `pico/nfc_reader.py`
+- `pico/wifi_connection.py`
+
+Before starting the integrated program, set `WIFI_SSID` and `WIFI_PASSWORD` in
+`main.py`. Run `wifi_connection.py` directly from Thonny to enter credentials
+interactively and test the connection independently. In the integrated program,
+Wi-Fi runs as a background task beside the gripper and conveyor. The onboard LED
+blinks whenever Wi-Fi is disconnected, and connection attempts continue without
+stopping either physical task.
 
 No packages from `pi/requirements.txt` are needed on the Pico.
 
@@ -26,7 +35,7 @@ The complete pin allocation is:
 
 - PN532 SDA: GP4 (physical pin 6)
 - PN532 SCL: GP5 (physical pin 7)
-- Robot base servo signal: GP9 (physical pin 12)
+- Gripper base servo signal: GP9 (physical pin 12)
 - Gripper servo signal: GP10 (physical pin 14)
 - Conveyor motor driver IN1: GP17 (physical pin 22)
 - Optional conveyor PWM/ENA: GP18 (physical pin 24)
