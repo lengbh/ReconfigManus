@@ -1,0 +1,74 @@
+{
+  "vertices": [
+    {
+      "id": 1,
+      "name": "Workstation A",
+      "buffer_capacity": 3,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [3, 8, 5]
+      }
+    },
+    {
+      "id": 2,
+      "name": "Workstation B",
+      "buffer_capacity": 3,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [2, 6, 4]
+      }
+    },
+    {
+      "id": 3,
+      "name": "Workstation C",
+      "buffer_capacity": 3,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [4, 9, 6]
+      }
+    },
+    {
+      "id": 4,
+      "name": "Workstation D",
+      "buffer_capacity": 3,
+      "service_time_distribution": {
+        "type": "triangular",
+        "parameters": [3, 7, 5]
+      }
+    }
+  ],
+  "arcs": [
+    {
+      "tail": 1,
+      "head": 2,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [10, 0.2]
+      }
+    },
+    {
+      "tail": 2,
+      "head": 3,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [11, 0.2]
+      }
+    },
+    {
+      "tail": 3,
+      "head": 4,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [9, 0.2]
+      }
+    },
+    {
+      "tail": 4,
+      "head": 1,
+      "transfer_time_distribution": {
+        "type": "normal",
+        "parameters": [12, 0.2]
+      }
+    }
+  ]
+}

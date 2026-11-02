@@ -3,6 +3,7 @@
 //
 
 #include "GraphManager.h"
+#include "SMPConfig.h"
 #include <fstream>
 #include <iomanip>
 #include <limits>
@@ -25,12 +26,13 @@ GraphManager::GraphManager(const json & graph_model)
         v["name"].get_to(vertex_label.name);
         vertex_label.role = VertexRoleFromString(v.value("vertex_role", "internal"));
         v["buffer_capacity"].get_to(vertex_label.buffer_capacity);
+        const auto& service_time_distribution = SMPConfig::ServiceTimeDistribution(v);
         {
             std::string tstr;
-            v["service_time_distribution"]["type"].get_to(tstr);
+            service_time_distribution["type"].get_to(tstr);
             vertex_label.service_time_dist.type = TimeDistTypeFromString(tstr);
         }
-        v["service_time_distribution"]["parameters"].get_to(vertex_label.service_time_dist.parameters);
+        service_time_distribution["parameters"].get_to(vertex_label.service_time_dist.parameters);
 
         auto vertex_descriptor = boost::add_vertex(vertex_label, *graph_);
         vertex_map_[vertex_label.id] = vertex_descriptor;
