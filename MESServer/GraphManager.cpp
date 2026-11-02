@@ -338,7 +338,7 @@ void GraphManager::WriteOutDotFile(const std::string& filename, bool symbolic) c
             os << std::fixed << std::setprecision(1);
             os << " [shape=box, style=filled, fillcolor=lightyellow, color=black, penwidth=1, label=\"" << 'S' << lbl.id;
             if (!lbl.name.empty()) os << ": " << lbl.name;
-            os << "\\nrole: " << VertexRoleToString(lbl.role);
+            // os << "\\nrole: " << VertexRoleToString(lbl.role);
             os << "\\nmax capacity: " << static_cast<int>(lbl.buffer_capacity)
                << "\\ns" << lbl.id << ": " << TimeDistTypeToString(td.type) << " (";
             for (size_t i = 0; i < td.parameters.size(); ++i) {

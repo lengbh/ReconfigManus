@@ -35,10 +35,11 @@ std::string ShellQuote(const std::string& s)
 
 int main(int argc, char* argv[])
 {
-    if (argc != 3 && argc != 4)
+    if (argc < 3 || argc > 5)
     {
-        std::cerr << "Usage: GraphRender <graph_json_file> <png|pdf> [-s]\n";
+        std::cerr << "Usage: GraphRender <graph_json_file> <png|pdf> [-s] [-k|--keep-dot]\n";
         std::cerr << "  -s: symbolic/small render, showing only vertex names and no edge details\n";
+        std::cerr << "  -k, --keep-dot: keep the intermediate .dot file (deleted by default)\n";
         return 1;
     }
 
@@ -51,15 +52,24 @@ int main(int argc, char* argv[])
     }
 
     bool symbolic = false;
-    if (argc == 4)
+    bool keep_dot = false;
+    for (int i = 3; i < argc; ++i)
     {
-        const std::string flag = ToLower(argv[3]);
-        if (flag != "-s")
+        const std::string flag = ToLower(argv[i]);
+        if (flag == "-s")
         {
-            std::cerr << "Unsupported flag: " << argv[3] << ". Use -s for symbolic/small render.\n";
+            symbolic = true;
+        }
+        else if (flag == "-k" || flag == "--keep-dot")
+        {
+            keep_dot = true;
+        }
+        else
+        {
+            std::cerr << "Unsupported flag: " << argv[i]
+                      << ". Use -s for symbolic/small render or -k/--keep-dot to keep the .dot file.\n";
             return 1;
         }
-        symbolic = true;
     }
 
     json j_graph;
@@ -92,17 +102,20 @@ int main(int argc, char* argv[])
         " -o " + ShellQuote(output_path.string());
 
     const int status = std::system(command.c_str());
+    if (!keep_dot)
+    {
+        std::error_code ec;
+        std::filesystem::remove(dot_path, ec);
+        if (ec)
+        {
+            std::cerr << "Warning: failed to delete intermediate dot file: " << dot_path << "\n";
+        }
+    }
+
     if (status != 0)
     {
         std::cerr << "Failed to execute Graphviz command:\n" << command << "\n";
         return 1;
-    }
-
-    std::error_code ec;
-    std::filesystem::remove(dot_path, ec);
-    if (ec)
-    {
-        std::cerr << "Warning: failed to delete intermediate dot file: " << dot_path << "\n";
     }
 
     std::cout << "Generated: " << output_path << "\n";
