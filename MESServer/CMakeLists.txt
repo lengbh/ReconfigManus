@@ -30,6 +30,14 @@ find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(GraphRender PRIVATE nlohmann_json::nlohmann_json)
 
+if(BUILD_TESTING)
+    add_executable(SMPConfigTests tests/test_smp_config.cpp)
+    target_include_directories(SMPConfigTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(SMPConfigTests PRIVATE nlohmann_json::nlohmann_json)
+    add_test(NAME SMPConfig COMMAND SMPConfigTests
+        ${CMAKE_CURRENT_SOURCE_DIR}/cfgs/modular_production_system_graph_smp.json)
+endif()
+
 
 # boost
 set(Boost_USE_MULTITHREAD ON)
