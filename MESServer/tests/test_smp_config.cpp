@@ -1,4 +1,5 @@
 #include "SMPConfig.h"
+#include "GraphDef.h"
 #include <fstream>
 #include <iostream>
 
@@ -57,6 +58,30 @@ int main(int argc, char* argv[])
         ExpectRejected(invalid);
         invalid = repairable;
         invalid["service_time_distribution"] = {{"type", "constant"}, {"parameters", {1}}};
+        ExpectRejected(invalid);
+        auto flexible = repairable;
+        flexible["smp"]["holding_time_distributions"]["failed"]["running"] = {
+            {"type", "uniform_mixture"}, {"parameters", {0.8, 10, 20, 100, 120}}};
+        SMPConfig::ServiceTimeDistribution(flexible);
+        flexible["smp"]["holding_time_distributions"]["running"]["idle"] = {
+            {"type", "empirical"}, {"parameters", {1, 1, 1, 10}}};
+        SMPConfig::ServiceTimeDistribution(flexible);
+        auto empirical = ST_TimeDist{TimeDistTypeFromString("empirical"), {1, 1, 1, 10}};
+        Require(std::abs(empirical.expected_value() - 3.25) < 1e-12, "Incorrect empirical mean");
+        auto mixture = ST_TimeDist{TimeDistTypeFromString("uniform_mixture"), {0.8, 10, 20, 100, 120}};
+        Require(std::abs(mixture.expected_value() - 34.0) < 1e-12, "Incorrect mixture mean");
+        for (int i = 0; i < 100; ++i)
+        {
+            const double value = mixture.generate_time();
+            Require((value >= 10 && value <= 20) || (value >= 100 && value <= 120), "Mixture sampled its gap");
+            const double observation = empirical.generate_time();
+            Require(observation == 1 || observation == 10, "Empirical sampled unobserved time");
+        }
+        invalid = flexible;
+        invalid["smp"]["holding_time_distributions"]["failed"]["running"]["parameters"][0] = 1.1;
+        ExpectRejected(invalid);
+        invalid = flexible;
+        invalid["smp"]["holding_time_distributions"]["running"]["idle"]["parameters"] = json::array();
         ExpectRejected(invalid);
         std::cout << "Ideal, legacy and repairable station SMP configuration checks passed\n";
     }

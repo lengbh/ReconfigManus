@@ -12,7 +12,7 @@
 
 enum TimeDistType
 {
-    uniform, normal, weibull, exponential, constant, triangular
+    uniform, normal, weibull, exponential, constant, triangular, empirical, uniform_mixture
 };
 
 enum class VertexRole   // TODO this could be handled elsewhere
@@ -48,6 +48,8 @@ inline TimeDistType TimeDistTypeFromString(const std::string& s) noexcept
     if (s == "exponential") return TimeDistType::exponential;
     if (s == "constant") return TimeDistType::constant;
     if (s == "triangular") return TimeDistType::triangular;
+    if (s == "empirical") return TimeDistType::empirical;
+    if (s == "uniform_mixture") return TimeDistType::uniform_mixture;
     return TimeDistType::constant;
 }
 
@@ -61,6 +63,8 @@ inline const char* TimeDistTypeToString(TimeDistType t) noexcept
         case TimeDistType::exponential: return "exponential";
         case TimeDistType::constant: return "constant";
         case TimeDistType::triangular: return "triangular";
+        case TimeDistType::empirical: return "empirical";
+        case TimeDistType::uniform_mixture: return "uniform_mixture";
         default: return "constant";
     }
 }
@@ -77,6 +81,20 @@ struct ST_TimeDist
 
         switch (type)
         {
+            case TimeDistType::empirical:
+            {
+                if (parameters.empty()) return 0.0;
+                std::uniform_int_distribution<std::size_t> d(0, parameters.size() - 1);
+                return parameters[d(gen)];
+            }
+            case TimeDistType::uniform_mixture:
+            {
+                if (parameters.size() != 5) return 0.0;
+                std::bernoulli_distribution component(parameters[0]);
+                const auto offset = component(gen) ? 1 : 3;
+                std::uniform_real_distribution<double> d(parameters[offset], parameters[offset + 1]);
+                return d(gen);
+            }
             case TimeDistType::normal:
             {
                 if (parameters.size() >= 2)
@@ -175,6 +193,18 @@ struct ST_TimeDist
     {
         switch (type)
         {
+            case TimeDistType::empirical:
+            {
+                if (parameters.empty()) return 0.0;
+                double sum = 0.0;
+                for (const double value : parameters) sum += value;
+                return sum / parameters.size();
+            }
+            case TimeDistType::uniform_mixture:
+                return parameters.size() == 5
+                    ? parameters[0] * (parameters[1] + parameters[2]) / 2.0
+                        + (1.0 - parameters[0]) * (parameters[3] + parameters[4]) / 2.0
+                    : 0.0;
             case TimeDistType::normal: // normal(mu, sigma)
                 return (parameters.size() >= 2) ? parameters[0] : 0.0;
 

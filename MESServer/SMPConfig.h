@@ -34,6 +34,7 @@ inline const nlohmann::json& ServiceTimeDistribution(const nlohmann::json& verte
         throw std::invalid_argument("Station SMP requires one probability row per state");
     const std::unordered_set<std::string> types = {
         "constant", "normal", "uniform", "exponential", "triangular", "weibull",
+        "empirical", "uniform_mixture",
     };
     for (const auto& state : state_names)
     {
@@ -67,10 +68,23 @@ inline const nlohmann::json& ServiceTimeDistribution(const nlohmann::json& verte
                 throw std::invalid_argument("Running and failed SMP states require timed transitions");
             const auto type = distribution.at("type").get<std::string>();
             const auto& parameters = distribution.at("parameters");
-            const std::size_t expected_size = type == "triangular" ? 3
+            const std::size_t expected_size = type == "uniform_mixture" ? 5 : type == "triangular" ? 3
                 : (type == "constant" || type == "exponential" ? 1 : 2);
-            if (!types.contains(type) || !parameters.is_array() || parameters.size() != expected_size)
+            if (!types.contains(type) || !parameters.is_array()
+                || (type == "empirical" ? parameters.empty() : parameters.size() != expected_size))
                 throw std::invalid_argument("Invalid SMP holding-time distribution");
+            for (const auto& value : parameters)
+                if (!value.is_number() || !std::isfinite(value.get<double>()))
+                    throw std::invalid_argument("SMP distribution parameters must be finite numbers");
+            if (type == "empirical")
+                for (const auto& value : parameters)
+                    if (value.get<double>() < 0)
+                        throw std::invalid_argument("Empirical holding times must be nonnegative");
+            if (type == "uniform_mixture"
+                && !(parameters[0].get<double>() >= 0 && parameters[0].get<double>() <= 1
+                    && parameters[1].get<double>() >= 0 && parameters[1] <= parameters[2]
+                    && parameters[3].get<double>() >= 0 && parameters[3] <= parameters[4]))
+                throw std::invalid_argument("Invalid uniform mixture weight or interval bounds");
         }
         if (std::abs(sum - 1.0) > 1e-12)
             throw std::invalid_argument("SMP transition probabilities must sum to 1");

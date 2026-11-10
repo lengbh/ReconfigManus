@@ -201,5 +201,29 @@ for the loaded generated `.dot` graph figure, could convert with [`graphviz`](ht
 - `dot -Tpdf system_graph.dot -o system_graph.pdf`
 - `dot -Tpng system_graph.dot -o system_graph.png`
 
+### GraphRender
+
+`GraphRender` converts a graph JSON file to DOT, PDF or PNG in the current working directory.
+It uses Graphviz's `dot` renderer; the SMP view is exported with `neato -n2` to retain the original flow layout.
+
+```shell
+./bin/macOS/GraphRender ../GraphDesEngine/SystemGraphs/modular_production_system_graph_smp.json pdf --smp --smp-below=6,7 --smp-closer=1,2,3,4,5 --keep-dot
+```
+
+`--smp` first lays out the original material-flow graph, then freezes every workstation position, arc curve and label position.
+Small state diagrams are placed outside the original graph bounds and joined to their machines by dotted lines crossing the material-flow arcs.
+The circles are labelled `I` (idle), `R` (running) and, where configured, `F` (failed).
+Use `--smp-below=6,7` to put the SMPs of S6 and S7 below their blocks and reduce horizontal space.
+Use `--smp-closer=1,2,3,4,5` to halve those machines' dotted attachment lengths, shifting their SMPs left toward the graph.
+Failure and repair transitions are highlighted in red.
+Transition probabilities and conditional holding-time distributions remain in DOT metadata; they are omitted from the picture for simplicity.
+Output names end in `_states`, for example `modular_production_system_graph_smp_states.pdf`.
+Legacy `service_time_distribution` entries are shown as ideal idle/running cycles.
+
+Omit `--smp` for the original material-flow graph, or use `-s` for its symbolic view.
+Use `dot` as the output format to retain only the DOT source, or `--keep-dot` to retain it alongside an image.
+Convert ordinary DOT graphs with `dot -Tpdf INPUT.dot -o OUTPUT.pdf`.
+For the positioned SMP diagrams, use `neato -n2 -Tpdf INPUT.dot -o OUTPUT.pdf` to preserve the saved geometry.
+
 ### Note
 The protocol definition `mes_server_def.h` should be synced to the Digital Twin simulation and transcribed to python to support the communication.

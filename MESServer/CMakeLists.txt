@@ -12,6 +12,7 @@ add_executable(${PROJECT_NAME} main.cpp
 
 add_executable(GraphRender graph_to_image_main.cpp
         GraphManager.cpp
+        SMPGraphRenderer.cpp
 )
 
 # copy config files to working dir
@@ -36,6 +37,16 @@ if(BUILD_TESTING)
     target_link_libraries(SMPConfigTests PRIVATE nlohmann_json::nlohmann_json)
     add_test(NAME SMPConfig COMMAND SMPConfigTests
         ${CMAKE_CURRENT_SOURCE_DIR}/cfgs/modular_production_system_graph_smp.json)
+    find_package(Python3 QUIET COMPONENTS Interpreter)
+    find_program(GRAPHVIZ_DOT dot)
+    find_program(GRAPHVIZ_NEATO neato)
+    if(Python3_Interpreter_FOUND AND GRAPHVIZ_DOT AND GRAPHVIZ_NEATO)
+        add_test(NAME GraphRenderSMP COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_graph_render.py
+            $<TARGET_FILE:GraphRender>
+            ${CMAKE_CURRENT_SOURCE_DIR}/cfgs/modular_production_system_graph_smp.json
+            ${GRAPHVIZ_DOT} ${GRAPHVIZ_NEATO})
+    endif()
 endif()
 
 
