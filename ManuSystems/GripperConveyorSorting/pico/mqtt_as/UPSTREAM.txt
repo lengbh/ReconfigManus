@@ -1,0 +1,5 @@
+MicroPython asynchronous MQTT client (mqtt_as)
+Source: https://github.com/peterhinch/micropython-mqtt
+Commit: 4dbce9ba8df169b1c1356deba14aec0bf7cde664
+Vendored files: mqtt_as/__init__.py and LICENSE, unchanged.
+MQTT v3.1.1 is used; optional MQTT v5 module is not included.
