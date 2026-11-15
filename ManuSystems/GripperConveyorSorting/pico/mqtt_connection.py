@@ -182,6 +182,7 @@ class MqttPublisher:
         if not self.connected:
             self._needs_snapshot = True
         self.connected = True
+        print("MQTT connected:", self.host, self.port)
 
     async def _publish(self, suffix, message):
         epoch = self._connection_epoch
@@ -233,17 +234,22 @@ class MqttPublisher:
                     established = True
                     self.connected = self.client.isconnected()
                     self._needs_snapshot = True
-                except (OSError, asyncio.TimeoutError):
+                except (OSError, asyncio.TimeoutError) as error:
                     self.connected = False
                     if hasattr(self.client, "_in_connect"):
                         self.client._in_connect = False
                     if hasattr(self.client, "_close"):
                         self.client._close()
-                    print("MQTT connection retry; local control continues.")
+                    print("MQTT retry", self.host, self.port,
+                          type(error).__name__, str(error),
+                          "- local control continues.")
                     await sleep_ms(self.retry_ms)
 
             while not self._closed:
-                self.connected = self.client.isconnected()
+                # mqtt_as reports connected during a handshake to permit its
+                # internal I/O; the status LED must wait for broker acceptance.
+                self.connected = (not getattr(self.client, "_in_connect", False)
+                                  and self.client.isconnected())
                 if not self.connected:
                     self._needs_snapshot = True
                     await sleep_ms(min(self.retry_ms, 250))

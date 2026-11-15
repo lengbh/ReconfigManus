@@ -213,15 +213,21 @@ class Gripper(ServoMotor):
         return await self.move_to(self.open_angle)
 
 
-async def run_gripper_cycle(gripper_base, gripper):
-    print("Placement detected. Closing gripper...")
-    await gripper.close()
-    print("Moving part to conveyor...")
-    await gripper_base.move_to_drop_position()
-    print("Releasing part...")
-    await gripper.open()
-    print("Part released. Gripper base returning...")
-    await gripper_base.move_to_load_position()
+async def run_gripper_cycle(gripper_base, gripper, activity_led=None):
+    try:
+        if activity_led is not None:
+            activity_led.on()
+        print("Placement detected. Closing gripper...")
+        await gripper.close()
+        print("Moving part to conveyor...")
+        await gripper_base.move_to_drop_position()
+        print("Releasing part...")
+        await gripper.open()
+        print("Part released. Gripper base returning...")
+        await gripper_base.move_to_load_position()
+    finally:
+        if activity_led is not None:
+            activity_led.off()
 
 
 async def prepare_gripper(gripper_base, gripper):
@@ -240,30 +246,29 @@ async def prepare_gripper(gripper_base, gripper):
             await asyncio.gather(*tasks, return_exceptions=True)
 
 
-async def gripper_task(sensor, gripper_base, gripper, telemetry=None):
+async def gripper_task(sensor, gripper_base, gripper, telemetry=None, activity_led=None):
     sensor_armed = True
     ready_reported = False
     while True:
         sensor_value = sensor.read_u16()
         if not ready_reported and telemetry is not None:
+            # Start from the first known reading. A reading in the hysteresis
+            # band has no earlier detection to retain, so it starts clear.
             telemetry.emit("placement/state",
-                           {"sensor_u16": sensor_value, "trigger_level": SENSOR_TRIGGER_LEVEL,
-                            "reset_level": SENSOR_RESET_LEVEL, "armed": True},
+                           {"detected": sensor_value > SENSOR_TRIGGER_LEVEL, "armed": True},
                            event="ready", force=True)
             ready_reported = True
         if not sensor_armed and sensor_value < SENSOR_RESET_LEVEL:
             sensor_armed = True
             if telemetry is not None:
                 telemetry.emit("placement/state",
-                               {"sensor_u16": sensor_value, "trigger_level": SENSOR_TRIGGER_LEVEL,
-                                "reset_level": SENSOR_RESET_LEVEL, "detected": False, "armed": True},
+                               {"detected": False, "armed": True},
                                event="rearmed", force=True)
         if sensor_armed and sensor_value > SENSOR_TRIGGER_LEVEL:
             sensor_armed = False
             if telemetry is not None:
                 telemetry.emit("placement/state",
-                               {"sensor_u16": sensor_value, "trigger_level": SENSOR_TRIGGER_LEVEL,
-                                "reset_level": SENSOR_RESET_LEVEL, "detected": True, "armed": False},
+                               {"detected": True, "armed": False},
                                event="detected", force=True)
-            await run_gripper_cycle(gripper_base, gripper)
+            await run_gripper_cycle(gripper_base, gripper, activity_led=activity_led)
         await sleep_ms(POLL_INTERVAL_MS)

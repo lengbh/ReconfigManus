@@ -15,6 +15,7 @@ For the complete integrated machine, copy these files to the Pico filesystem
 root:
 
 - `pico/main.py` as `main.py`
+- `pico/crash_log.py`
 - `common/part_uid_dict.py`
 - `pico/conveyor.py`
 - `pico/gripper.py`
@@ -32,9 +33,25 @@ and set `WIFI_SSID`, `WIFI_PASSWORD`, and any MQTT credentials there. Keep
 `secrets.py` private; it is ignored by Git. Existing nonempty Wi-Fi settings were
 preserved in the local ignored file during this update. Run `wifi_connection.py`
 directly from Thonny to enter credentials interactively and test Wi-Fi alone.
-The onboard LED blinks whenever Wi-Fi is disconnected. When MQTT is enabled,
-the MQTT client owns reconnection and the LED task only observes the link;
-otherwise the standalone Wi-Fi task maintains the connection.
+The onboard LED shows connection progress without needing a USB console:
+
+- **Fast blinking** (100 ms on / 100 ms off): waiting for Wi-Fi.
+- **Slow blinking** (500 ms on / 500 ms off): Wi-Fi connected, waiting for MQTT.
+- **Off**: Wi-Fi and MQTT connected.
+- **Steady on**: controller stopped, including shutdown after a Python exception.
+
+Blinking resumes automatically if a connection drops. If MQTT is disabled or
+misconfigured, the integrated program keeps blinking slowly once Wi-Fi connects.
+When MQTT is enabled, the MQTT client owns reconnection and the LED task only
+observes connection state; otherwise the standalone Wi-Fi task maintains the
+connection. Running `wifi_connection.py` directly tests only Wi-Fi, so its LED
+turns off once Wi-Fi connects.
+
+The gripper robot's separate LED uses the GP6 signal (physical pin 9, active
+high). At startup it turns on for one second, then off. When the light sensor
+detects a part, it stays on throughout closing, moving to the conveyor, opening,
+and returning to the load position. It turns off after the return finishes, or
+if the cycle is interrupted or the controller shuts down.
 
 No packages from `pi/requirements.txt` are needed on the Pico.
 
@@ -42,6 +59,7 @@ The complete pin allocation is:
 
 - PN532 SDA: GP4 (physical pin 6)
 - PN532 SCL: GP5 (physical pin 7)
+- Gripper LED signal: GP6 (physical pin 9)
 - Gripper base servo signal: GP9 (physical pin 12)
 - Gripper servo signal: GP10 (physical pin 14)
 - Conveyor motor driver IN1: GP17 (physical pin 22)
@@ -82,6 +100,29 @@ Run `test_nfc_hardware.py` manually from Thonny. A recognized tag prints its UID
 and part ID, then blinks the onboard LED once per part ID. The next scan starts
 after the tag is removed. An unrecognized tag prints its UID without blinking.
 
+PN532 ACK and response reads retry `ETIMEDOUT` up to three attempts, with 10 ms
+between attempts. Async retries yield so other controller tasks can run. The
+bus runs at 100 kHz with a bounded 50 ms I2C transfer timeout.
+
+Reader detection and initialization run in the background conveyor task, so a
+reader left unresponsive at startup does not prevent the gripper or MQTT from
+starting. Reader faults pause the conveyor and trigger recovery with a
+one-second delay between attempts while the gripper and MQTT tasks continue.
+Recovery clears a stuck SDA line with up to nine clock pulses, reinitializes
+the I2C controller, aborts
+the unfinished PN532 command, checks its firmware, and reapplies SAM
+configuration. It does not restart the Pico or replay a conveyor movement.
+Scanning resumes only after a successful reader response. A failed read is not
+an absent tag; tag-removal confirmations restart after an outage so the same
+part is not sorted twice. Invalid ACKs and frames also enter reader recovery.
+
+The first failure in each outage is saved to `/last_error.txt`; repeated recovery
+attempts do not repeatedly write to flash. MQTT status includes `nfc_connected`,
+`nfc_error`, `nfc_faults`, and `nfc_recovery_attempts`. A PN532 that keeps SCL or
+SDA low may still require its power/reset or wiring to be fixed; in that case
+the conveyor remains stopped and recovery continues. Invalid pin/configuration
+settings and unrelated control errors still stop the controller.
+
 
 ## Continuous motion telemetry
 
@@ -108,8 +149,9 @@ that physical homing or contact has been verified.
 
 ## MQTT setup
 
-The broker is not configured yet: `MQTT_HOST = ""` deliberately keeps MQTT
-inactive, while local sorting and Wi-Fi continue. Once Mosquitto is available:
+Set `MQTT_HOST` to the broker computer's address on the Pico's network.
+An empty `MQTT_HOST` disables MQTT while local sorting and Wi-Fi continue.
+Once Mosquitto is available:
 
 1. Set `MQTT_HOST` in `mqtt_config.py` to the broker computer's numeric LAN IPv4
    address, for example `192.168.1.20`, and verify `MQTT_PORT` (default 1883).
@@ -123,6 +165,15 @@ inactive, while local sorting and Wi-Fi continue. Once Mosquitto is available:
 4. From the broker computer, inspect messages with
    `mosquitto_sub -h BROKER_IP -p 1883 -t 'gripper_conveyor/#' -v`
    (supply your broker's authentication options when required).
+
+For a Mac connected by Ethernet to a single-port TP-Link TL-WR802N, use
+**Access Point** mode so Ethernet and the Pico's Wi-Fi share a LAN. For an
+isolated setup without another DHCP server, give the access point a static LAN
+address and enable its DHCP server. Use the Mac's **Ethernet** LAN IPv4 address
+as `MQTT_HOST`; reserve that address in the router's DHCP settings so it remains
+stable. A self-assigned `169.254.x.x` Ethernet address indicates the Mac has not
+received a usable router LAN address. After changing `MQTT_HOST`, copy the
+updated `mqtt_config.py` to the Pico and restart it.
 
 The vendored client is `mqtt_as` 0.8.5, pinned to upstream commit
 `4dbce9ba8df169b1c1356deba14aec0bf7cde664`. Its MIT licence and source provenance
@@ -140,18 +191,31 @@ All messages are JSON. The default prefix is `gripper_conveyor`.
 |---|---|---|
 | `rotation/state` | `commanded_angle_deg`, `target_angle_deg`, `moving`, `motion_id`, `progress` | QoS 0, retained |
 | `claw/state` | rotation fields plus `closure_fraction`, `travel_mm` | QoS 0, retained |
-| `conveyor/state` | `running`, `direction`, `speed_command_percent`, `pwm_enabled`, `duration_ms`, `part_id` | QoS 0, retained |
-| `placement/state` | `sensor_u16`, `detected`, `armed`, hysteresis thresholds | QoS 0, retained |
+| `conveyor/state` | `running`, `direction`, `speed_command_percent`, `pwm_enabled`, `duration_ms`, `part_id`, `nfc_connected`, `nfc_error` | QoS 0, retained |
+| `placement/state` | `detected`, `armed` | QoS 0, retained |
 | `part/event` | NFC `uid`, `part_id`, `recognized` | QoS 1, not retained |
-| `status` | `online`, `mqtt_connected`, `wifi_connected`, `mqtt_enabled`, `reason` | QoS 0, retained |
+| `status` | `online`, `mqtt_connected`, `wifi_connected`, `mqtt_enabled`, `reason`, `nfc_connected`, `nfc_error`, `nfc_faults`, `nfc_recovery_attempts` | QoS 0, retained |
 
 The common envelope contains `schema_version`, `device_id`, `seq`, `uptime_ms`,
 and `event`. `seq` is a controller-wide sequence number; consumers can deduplicate
 QoS 1 messages. The retained Last Will reports `online: false` after unexpected
 connection loss; its `seq` and `uptime_ms` are null because it is generated by the
 broker. Retained poses are the most recently reported commands: check status
-before presenting them as a live connection. State fields are merged so Wi-Fi,
-MQTT and placement producers do not erase one another's fields.
+before presenting them as a live connection. State fields are merged so Wi-Fi
+and MQTT status producers do not erase one another's fields.
+
+Placement reports semantic state changes, rather than periodic sensor samples.
+The gripper controller emits `ready` once after initialization, with `armed: true`
+and `detected` from the first reading. A startup reading above the trigger emits
+`ready` with `detected: true`, immediately followed by `detected` with
+`armed: false`. A first reading in the hysteresis band starts with
+`detected: false`. Later `detected` events carry `detected: true, armed: false`;
+a reading below the reset threshold emits `rearmed` with
+`detected: false, armed: true`. Both thresholds remain internal to the Pico.
+Unchanged readings emit nothing, including while the gripper completes a cycle.
+A broker reconnect republishes the latest snapshot with its existing sequence
+number; it does not create a new detection event. ADC values and thresholds are
+not sent over MQTT.
 
 An illustrative rotation update is:
 
@@ -175,6 +239,32 @@ With the default `None`, `travel_mm` is null; use the normalized fraction to
 animate the existing model without inventing a physical stroke length. If the
 mechanism has a nonlinear angle/travel relationship, replace this calibration
 with measured mapping points before interpreting it as millimetres.
+
+## Crash traceback log
+
+Unhandled startup/controller errors and hardware-cleanup failures are saved to
+`/last_error.txt` on the Pico's internal flash. Unhandled background-task errors,
+including errors in the MQTT client's detached tasks, also save a traceback.
+The first NFC fault in each recovery episode is saved even though the controller
+keeps running; its report is labelled `NFC reader fault; recovering`.
+The report includes the source, MicroPython tick count, free heap, and traceback.
+Normal restarts and manual stops preserve the file. The next recorded error
+replaces it; a cleanup error during the same controller failure is appended so
+the initiating traceback is retained. Handled MQTT connection retries do not
+write to flash. The file is closed and the filesystem synced where supported.
+
+After a failure, move the USB cable from the router to the Pico and open
+`last_error.txt` from the Pico's filesystem in Thonny. Save a copy on the Mac
+before running further diagnostics. Alternatively, print it from the REPL:
+
+```python
+with open("/last_error.txt") as log:
+    print(log.read())
+```
+
+This captures Python exceptions; a hard freeze, sudden power loss, or an error
+before the application imports finish may leave no new traceback. Logging does
+not automatically restart the controller.
 
 ## Validation
 

@@ -1,11 +1,12 @@
 import asyncio
-from machine import ADC
+from machine import ADC, Pin
+from time import sleep
 
 import mqtt_config as settings
 from conveyor import Conveyor
+from crash_log import log_background_exception, save_last_traceback
 from gripper import (
-    Gripper, GripperBase, SENSOR_TRIGGER_LEVEL, SENSOR_RESET_LEVEL,
-    gripper_task, prepare_gripper, sleep_ms,
+    Gripper, GripperBase, gripper_task, prepare_gripper,
 )
 from mqtt_connection import MqttPublisher
 from telemetry import Telemetry
@@ -14,6 +15,7 @@ from wifi_connection import connect_wifi, wifi_status_task
 
 NFC_SDA_PIN = 4
 NFC_SCL_PIN = 5
+GRIPPER_LED_PIN = 6
 GRIPPER_BASE_SERVO_PIN = 9
 GRIPPER_SERVO_PIN = 10
 MOTOR_IN1_PIN = 17
@@ -32,11 +34,12 @@ def device_id():
     return settings.MQTT_CLIENT_ID_PREFIX + "-" + suffix
 
 
-def release_resources(publisher, conveyor, gripper_base, gripper):
+def release_resources(publisher, conveyor, gripper_base, gripper, gripper_led=None):
     """Attempt every shutdown action even if one peripheral raises an error."""
     first_error = None
     for resource, method in ((publisher, "close"), (conveyor, "cleanup"),
-                             (gripper_base, "deinit"), (gripper, "deinit")):
+                             (gripper_base, "deinit"), (gripper, "deinit"),
+                             (gripper_led, "off")):
         if resource is not None:
             try:
                 getattr(resource, method)()
@@ -48,43 +51,27 @@ def release_resources(publisher, conveyor, gripper_base, gripper):
         raise first_error
 
 
-async def placement_telemetry_task(sensor, telemetry):
-    """Sample throughout servo motion; the gripper task owns triggering."""
-    detected = False
-    while True:
-        value = sensor.read_u16()
-        if value > SENSOR_TRIGGER_LEVEL:
-            detected = True
-        elif value < SENSOR_RESET_LEVEL:
-            detected = False
-        telemetry.emit("placement/state", {
-            "sensor_u16": value,
-            "detected": detected,
-            "trigger_level": SENSOR_TRIGGER_LEVEL,
-            "reset_level": SENSOR_RESET_LEVEL,
-        })
-        await sleep_ms(telemetry.publish_interval_ms)
-
-
 async def run_system(
-    conveyor, sensor, gripper_base, gripper, telemetry=None, publisher=None
+    conveyor, sensor, gripper_base, gripper, telemetry=None, publisher=None,
+    gripper_led=None,
 ):
     """Run local control independently of broker availability."""
     tasks = []
+    loop = asyncio.get_event_loop()
+    previous_handler = loop.get_exception_handler()
+    loop.set_exception_handler(log_background_exception)
     try:
         if publisher is not None:
             tasks.append(asyncio.create_task(publisher.run()))
             if publisher.owns_wifi:
-                wifi = wifi_status_task(telemetry=telemetry)
+                wifi = wifi_status_task(telemetry=telemetry, publisher=publisher)
             else:
                 wifi = connect_wifi(settings.WIFI_SSID, settings.WIFI_PASSWORD,
-                                    telemetry=telemetry)
+                                    telemetry=telemetry, publisher=publisher)
         else:
             wifi = connect_wifi(settings.WIFI_SSID, settings.WIFI_PASSWORD,
                                 telemetry=telemetry)
         tasks.append(asyncio.create_task(wifi))
-        if telemetry is not None:
-            tasks.append(asyncio.create_task(placement_telemetry_task(sensor, telemetry)))
 
         # Position both axes simultaneously at startup; networking never gates
         # physical initialization or the autonomous sorting sequence.
@@ -92,31 +79,44 @@ async def run_system(
         print("System ready.")
         tasks.extend([
             asyncio.create_task(gripper_task(
-                sensor, gripper_base, gripper, telemetry=telemetry
+                sensor, gripper_base, gripper, telemetry=telemetry,
+                activity_led=gripper_led,
             )),
             asyncio.create_task(conveyor.run()),
         ])
         await asyncio.gather(*tasks)
     finally:
-        for task in tasks:
-            task.cancel()
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
-        if publisher is not None:
-            publisher.close()
+        try:
+            for task in tasks:
+                task.cancel()
+            if tasks:
+                await asyncio.gather(*tasks, return_exceptions=True)
+            if publisher is not None:
+                publisher.close()
+        finally:
+            loop.set_exception_handler(previous_handler)
 
 
 def main():
+    status_led = Pin("LED", Pin.OUT)
+    status_led.off()
     gripper_base = None
     gripper = None
+    gripper_led = None
     conveyor = None
     publisher = None
-    telemetry = Telemetry(
-        publish_hz=settings.TELEMETRY_HZ,
-        event_capacity=settings.TELEMETRY_EVENT_CAPACITY,
-        device_id=device_id(),
-    )
+    crash_logged = False
     try:
+        gripper_led = Pin(GRIPPER_LED_PIN, Pin.OUT, value=0)
+        gripper_led.on()
+        # Show the power-on pulse before starting peripherals or async tasks.
+        sleep(1)
+        gripper_led.off()
+        telemetry = Telemetry(
+            publish_hz=settings.TELEMETRY_HZ,
+            event_capacity=settings.TELEMETRY_EVENT_CAPACITY,
+            device_id=device_id(),
+        )
         gripper_base = GripperBase(
             GRIPPER_BASE_SERVO_PIN, telemetry=telemetry,
             command_interval_ms=settings.COMMAND_INTERVAL_MS,
@@ -137,15 +137,30 @@ def main():
             motor_pwm_pin=MOTOR_PWM_PIN,
             nfc_sda_pin=NFC_SDA_PIN, nfc_scl_pin=NFC_SCL_PIN,
             telemetry=telemetry,
+            fault_logger=save_last_traceback,
         )
         publisher = MqttPublisher(telemetry, settings)
         asyncio.run(run_system(
-            conveyor, sensor, gripper_base, gripper, telemetry, publisher
+            conveyor, sensor, gripper_base, gripper, telemetry, publisher,
+            gripper_led=gripper_led,
         ))
     except KeyboardInterrupt:
         print("Shutdown requested.")
+    except Exception as error:
+        crash_logged = save_last_traceback(error)
+        raise
     finally:
-        release_resources(publisher, conveyor, gripper_base, gripper)
+        try:
+            release_resources(publisher, conveyor, gripper_base, gripper,
+                              gripper_led=gripper_led)
+        except Exception as error:
+            # Keep the initiating traceback if shutdown raises another error.
+            save_last_traceback(error, source="shutdown cleanup", append=crash_logged)
+            raise
+        finally:
+            # Network tasks have finished, so their LED cleanup cannot undo this.
+            # Keep the stopped indication even if peripheral cleanup fails.
+            status_led.on()
         print("System stopped safely.")
 
 

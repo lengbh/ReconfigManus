@@ -1,7 +1,8 @@
 import asyncio
 
 
-BLINK_INTERVAL_MS = 250
+BLINK_INTERVAL_MS = 100
+MQTT_BLINK_INTERVAL_MS = 500
 RECONNECT_INTERVAL_MS = 10_000
 
 
@@ -12,7 +13,20 @@ async def sleep_ms(duration_ms):
         await asyncio.sleep(duration_ms / 1000)
 
 
-async def connect_wifi(ssid, password, telemetry=None):
+def update_status_led(led, wifi_connected, publisher=None):
+    """Blink fast for Wi-Fi, slowly for MQTT, and stay off when ready."""
+    if not wifi_connected:
+        interval_ms = BLINK_INTERVAL_MS
+    elif publisher is not None and not publisher.connected:
+        interval_ms = MQTT_BLINK_INTERVAL_MS
+    else:
+        led.off()
+        return BLINK_INTERVAL_MS
+    led.value(not led.value())
+    return interval_ms
+
+
+async def connect_wifi(ssid, password, telemetry=None, publisher=None):
     import network
     from machine import Pin
 
@@ -36,8 +50,8 @@ async def connect_wifi(ssid, password, telemetry=None):
                     if telemetry is not None:
                         telemetry.emit("status", {"wifi_connected": True})
                 was_connected = True
-                status_led.off()
-                await sleep_ms(BLINK_INTERVAL_MS)
+                interval_ms = update_status_led(status_led, True, publisher)
+                await sleep_ms(interval_ms)
                 continue
 
             if was_connected:
@@ -61,20 +75,21 @@ async def connect_wifi(ssid, password, telemetry=None):
                 if wlan.isconnected():
                     break
 
-                status_led.value(not status_led.value())
+                interval_ms = update_status_led(status_led, False, publisher)
                 print(".", end="")
-                await sleep_ms(BLINK_INTERVAL_MS)
+                await sleep_ms(interval_ms)
     finally:
         status_led.off()
 
 
-async def wifi_status_task(telemetry=None, wlan=None):
-    """Observe MQTT-owned Wi-Fi without starting a competing reconnect loop."""
+async def wifi_status_task(telemetry=None, wlan=None, publisher=None):
+    """Show Wi-Fi/MQTT progress without starting a competing reconnect loop."""
     from machine import Pin
     if wlan is None:
         import network
         wlan = network.WLAN(network.STA_IF)
     led = Pin("LED", Pin.OUT)
+    led.off()
     previous = None
     try:
         while True:
@@ -84,11 +99,8 @@ async def wifi_status_task(telemetry=None, wlan=None):
                     telemetry.emit("status", {"wifi_connected": connected})
                 previous = connected
                 print("Wi-Fi connected." if connected else "Wi-Fi disconnected.")
-            if connected:
-                led.off()
-            else:
-                led.value(not led.value())
-            await sleep_ms(BLINK_INTERVAL_MS)
+            interval_ms = update_status_led(led, connected, publisher)
+            await sleep_ms(interval_ms)
     finally:
         led.off()
 

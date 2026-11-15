@@ -10,8 +10,8 @@ WIFI_PASSWORD = getattr(_secrets, "WIFI_PASSWORD", "")
 MQTT_USER = getattr(_secrets, "MQTT_USER", None)
 MQTT_PASSWORD = getattr(_secrets, "MQTT_PASSWORD", None)
 
-# Mosquitto is not set up yet. Use its numeric LAN IPv4 address, not localhost.
-MQTT_HOST = ""
+# Mac Ethernet IPv4 address on the router LAN. Reserve this address in DHCP.
+MQTT_HOST = "192.168.0.100"
 MQTT_PORT = 1883
 MQTT_CLIENT_ID_PREFIX = "gripper-conveyor"
 TOPIC_PREFIX = "gripper_conveyor"

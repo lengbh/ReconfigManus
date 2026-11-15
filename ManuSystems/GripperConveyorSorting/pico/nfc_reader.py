@@ -1,8 +1,29 @@
 import asyncio
+import errno
 import time
 from machine import I2C, Pin
 
 from part_uid_dict import get_part_id
+
+
+I2C_READ_ATTEMPTS = 3
+I2C_READ_RETRY_MS = 10
+I2C_FREQUENCY = 100_000
+I2C_TIMEOUT_US = 50_000
+
+
+def _sleep_ms_sync(duration_ms):
+    if hasattr(time, "sleep_ms"):
+        time.sleep_ms(duration_ms)
+    else:
+        time.sleep(duration_ms / 1000)
+
+
+def _sleep_us(duration_us):
+    if hasattr(time, "sleep_us"):
+        time.sleep_us(duration_us)
+    else:
+        time.sleep(duration_us / 1_000_000)
 
 
 def _ticks_ms():
@@ -49,34 +70,70 @@ class PN532_I2C:
         self._async_lock = None
 
     def _is_ready(self):
-        try:
-            status = self.i2c.readfrom(self.address, 1)
-            return bool(status) and status[0] == 0x01
-        except OSError:
-            return False
+        status = self.i2c.readfrom(self.address, 1)
+        return bool(status) and status[0] == 0x01
+
+    def _read_data(self, length):
+        for attempt in range(I2C_READ_ATTEMPTS):
+            try:
+                return self.i2c.readfrom(self.address, length)
+            except OSError as error:
+                if (not error.args or error.args[0] != errno.ETIMEDOUT
+                        or attempt == I2C_READ_ATTEMPTS - 1):
+                    raise
+                print("PN532 I2C read timed out; retry", attempt + 1)
+                _sleep_ms_sync(I2C_READ_RETRY_MS)
+
+    async def _read_data_async(self, length):
+        for attempt in range(I2C_READ_ATTEMPTS):
+            try:
+                return self.i2c.readfrom(self.address, length)
+            except OSError as error:
+                if (not error.args or error.args[0] != errno.ETIMEDOUT
+                        or attempt == I2C_READ_ATTEMPTS - 1):
+                    raise
+                # Retry this read while holding the command lock. Resending a
+                # whole command could confuse its pending ACK/response.
+                print("PN532 I2C read timed out; retry", attempt + 1)
+                await _sleep_ms(I2C_READ_RETRY_MS)
 
     def _wait_ready(self, timeout_ms):
         started = _ticks_ms()
+        last_error = None
         while _ticks_diff(_ticks_ms(), started) < timeout_ms:
-            if self._is_ready():
-                return
+            try:
+                ready = self._is_ready()
+            except OSError as error:
+                last_error = error
+            else:
+                last_error = None
+                if ready:
+                    return
             remaining = timeout_ms - _ticks_diff(_ticks_ms(), started)
             if remaining > 0:
-                if hasattr(time, "sleep_ms"):
-                    time.sleep_ms(min(10, remaining))
-                else:
-                    time.sleep(min(10, remaining) / 1000)
+                _sleep_ms_sync(min(10, remaining))
+        if last_error is not None:
+            raise last_error
         raise PN532Timeout("PN532 response timed out")
 
     async def _wait_ready_async(self, timeout_ms):
         started = _ticks_ms()
+        last_error = None
         while _ticks_diff(_ticks_ms(), started) < timeout_ms:
-            if self._is_ready():
-                return
+            try:
+                ready = self._is_ready()
+            except OSError as error:
+                last_error = error
+            else:
+                last_error = None
+                if ready:
+                    return
             remaining = timeout_ms - _ticks_diff(_ticks_ms(), started)
             if remaining > 0:
                 # The servo and telemetry tasks keep running during NFC waits.
                 await _sleep_ms(min(10, remaining))
+        if last_error is not None:
+            raise last_error
         raise PN532Timeout("PN532 response timed out")
 
     def _write_frame(self, payload):
@@ -94,12 +151,18 @@ class PN532_I2C:
             raise PN532Error("Invalid PN532 acknowledgement")
 
     def _read_ack(self, timeout_ms):
-        self._wait_ready(timeout_ms)
-        self._check_ack(self.i2c.readfrom(self.address, 7))
+        try:
+            self._wait_ready(timeout_ms)
+        except PN532Timeout:
+            raise PN532Error("PN532 did not acknowledge the command")
+        self._check_ack(self._read_data(7))
 
     async def _read_ack_async(self, timeout_ms):
-        await self._wait_ready_async(timeout_ms)
-        self._check_ack(self.i2c.readfrom(self.address, 7))
+        try:
+            await self._wait_ready_async(timeout_ms)
+        except PN532Timeout:
+            raise PN532Error("PN532 did not acknowledge the command")
+        self._check_ack(await self._read_data_async(7))
 
     def _parse_frame(self, raw):
         # The first byte is the I2C readiness status. A normal frame has five
@@ -128,11 +191,11 @@ class PN532_I2C:
 
     def _read_frame(self, timeout_ms):
         self._wait_ready(timeout_ms)
-        return self._parse_frame(self.i2c.readfrom(self.address, 65))
+        return self._parse_frame(self._read_data(65))
 
     async def _read_frame_async(self, timeout_ms):
         await self._wait_ready_async(timeout_ms)
-        return self._parse_frame(self.i2c.readfrom(self.address, 65))
+        return self._parse_frame(await self._read_data_async(65))
 
     def _command_response(self, command, response):
         if len(response) < 2:
@@ -198,23 +261,94 @@ class PN532_I2C:
 
 
 class NFCReader:
-    def __init__(self, debug=False, i2c_id=0, sda_pin=4, scl_pin=5):
-        i2c = I2C(
-            i2c_id,
-            sda=Pin(sda_pin),
-            scl=Pin(scl_pin),
-            freq=400000,
-        )
-        self.nfc = PN532_I2C(i2c, debug=debug)
+    def __init__(self, debug=False, i2c_id=0, sda_pin=4, scl_pin=5,
+                 i2c_freq=I2C_FREQUENCY, initialize=True):
+        self.debug = debug
+        self.i2c_id = i2c_id
+        self.sda_pin = sda_pin
+        self.scl_pin = scl_pin
+        self.i2c_freq = i2c_freq
+        self.initialized = False
+        self._access_lock = asyncio.Lock()
+        self._configure_bus()
+        if initialize:
+            self._initialize_sync()
+
+    def _initialize_sync(self):
         _, version, revision, _ = self.nfc.firmware_version()
         print("PN532 detected: Firmware {}.{}".format(version, revision))
         self.nfc.sam_configuration()
+        self.initialized = True
+
+    def _configure_bus(self):
+        self.i2c = I2C(
+            self.i2c_id, sda=Pin(self.sda_pin), scl=Pin(self.scl_pin),
+            freq=self.i2c_freq, timeout=I2C_TIMEOUT_US,
+        )
+        self.nfc = PN532_I2C(self.i2c, debug=self.debug)
+
+    def _clear_bus(self):
+        if hasattr(self.i2c, "deinit"):
+            self.i2c.deinit()
+        # Release lines as inputs; only ever drive them LOW during bus clear.
+        # This also removes the hardware-I2C alternate function temporarily.
+        scl = Pin(self.scl_pin, Pin.IN, Pin.PULL_UP)
+        sda = Pin(self.sda_pin, Pin.IN, Pin.PULL_UP)
+        if not scl.value():
+            raise OSError(errno.ETIMEDOUT, "PN532 SCL held low; reset/power check needed")
+        for _ in range(9):
+            if sda.value():
+                break
+            scl.init(Pin.OUT, value=0)
+            _sleep_us(5)
+            scl.init(Pin.IN, Pin.PULL_UP)
+            _sleep_us(5)
+            if not scl.value():
+                raise OSError(errno.ETIMEDOUT, "PN532 SCL held low during bus clear")
+        # Generate a STOP, then check that both lines were released.
+        scl.init(Pin.OUT, value=0)
+        sda.init(Pin.OUT, value=0)
+        _sleep_us(5)
+        scl.init(Pin.IN, Pin.PULL_UP)
+        _sleep_us(5)
+        if not scl.value():
+            sda.init(Pin.IN, Pin.PULL_UP)
+            raise OSError(errno.ETIMEDOUT, "PN532 SCL held low during STOP")
+        sda.init(Pin.IN, Pin.PULL_UP)
+        _sleep_us(5)
+        if not sda.value():
+            raise OSError(errno.ETIMEDOUT, "PN532 SDA held low after bus clear")
+
+    async def _recover_unlocked(self):
+        self.initialized = False
+        self._clear_bus()
+        self._configure_bus()
+        # NXP's ACK abort discards an unfinished command or stale response.
+        self.i2c.writeto(self.nfc.address, self.nfc.ACK)
+        await _sleep_ms(10)
+        firmware = await self.nfc.call_async(0x02)
+        if len(firmware) < 4 or firmware[0] != 0x32:
+            raise PN532Error("PN532 firmware check failed during recovery")
+        await self.nfc.call_async(0x14, b"\x01\x14\x01")
+        self.initialized = True
+        print("PN532 reinitialized.")
+
+    async def recover_async(self):
+        """Clear the bus and resynchronize the PN532 without restarting motion."""
+        async with self._access_lock:
+            await self._recover_unlocked()
 
     def read_uid(self, timeout=0.5):
+        if not self.initialized:
+            self._initialize_sync()
         return self.nfc.read_passive_target(timeout=timeout)
 
     async def read_uid_async(self, timeout=0.5):
-        return await self.nfc.read_passive_target_async(timeout=timeout)
+        # Recovery cannot change the I2C transport halfway through another read.
+        async with self._access_lock:
+            if not self.initialized:
+                await self._recover_unlocked()
+            return await self.nfc.read_passive_target_async(timeout=timeout)
 
     def read_part_id(self, timeout=0.5):
         uid = self.read_uid(timeout=timeout)
