@@ -83,6 +83,20 @@ int main(int argc, char* argv[])
         invalid = flexible;
         invalid["smp"]["holding_time_distributions"]["running"]["idle"]["parameters"] = json::array();
         ExpectRejected(invalid);
+        auto lognormal = ST_TimeDist{TimeDistTypeFromString("lognormal"), {2.0, 0.5}};
+        Require(TimeDistTypeToString(lognormal.type) == std::string("lognormal"), "Lognormal type did not round-trip");
+        Require(std::abs(lognormal.expected_value() - std::exp(2.125)) < 1e-12, "Incorrect lognormal mean");
+        auto deterministic = ST_TimeDist{TimeDistType::lognormal, {2.0, 0.0}};
+        Require(deterministic.generate_time() == std::exp(2.0), "Zero-sigma lognormal changed");
+        flexible["smp"]["holding_time_distributions"]["running"]["idle"] = {
+            {"type", "lognormal"}, {"parameters", {2.0, 0.5}}};
+        SMPConfig::ServiceTimeDistribution(flexible);
+        for (const auto& parameters : {json::array({2.0, -0.5}), json::array({true, 0.5}), json::array({2.0})})
+        {
+            invalid = flexible;
+            invalid["smp"]["holding_time_distributions"]["running"]["idle"]["parameters"] = parameters;
+            ExpectRejected(invalid);
+        }
         std::cout << "Ideal, legacy and repairable station SMP configuration checks passed\n";
     }
     catch (const std::exception& error)

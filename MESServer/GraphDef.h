@@ -12,7 +12,7 @@
 
 enum TimeDistType
 {
-    uniform, normal, weibull, exponential, constant, triangular, empirical, uniform_mixture
+    uniform, normal, weibull, exponential, constant, triangular, empirical, uniform_mixture, lognormal
 };
 
 enum class VertexRole   // TODO this could be handled elsewhere
@@ -43,6 +43,7 @@ inline const char* VertexRoleToString(VertexRole role) noexcept
 inline TimeDistType TimeDistTypeFromString(const std::string& s) noexcept
 {
     if (s == "uniform") return TimeDistType::uniform;
+    if (s == "lognormal") return TimeDistType::lognormal;
     if (s == "normal") return TimeDistType::normal;
     if (s == "weibull") return TimeDistType::weibull;
     if (s == "exponential") return TimeDistType::exponential;
@@ -59,6 +60,7 @@ inline const char* TimeDistTypeToString(TimeDistType t) noexcept
     {
         case TimeDistType::uniform: return "uniform";
         case TimeDistType::normal: return "normal";
+        case TimeDistType::lognormal: return "lognormal";
         case TimeDistType::weibull: return "weibull";
         case TimeDistType::exponential: return "exponential";
         case TimeDistType::constant: return "constant";
@@ -93,6 +95,14 @@ struct ST_TimeDist
                 std::bernoulli_distribution component(parameters[0]);
                 const auto offset = component(gen) ? 1 : 3;
                 std::uniform_real_distribution<double> d(parameters[offset], parameters[offset + 1]);
+                return d(gen);
+            }
+            case TimeDistType::lognormal:
+            {
+                if (parameters.size() != 2 || !std::isfinite(parameters[0])
+                    || !std::isfinite(parameters[1]) || parameters[1] < 0) return 0.0;
+                if (parameters[1] == 0) return std::exp(parameters[0]);
+                std::lognormal_distribution<double> d(parameters[0], parameters[1]);
                 return d(gen);
             }
             case TimeDistType::normal:
@@ -205,6 +215,10 @@ struct ST_TimeDist
                     ? parameters[0] * (parameters[1] + parameters[2]) / 2.0
                         + (1.0 - parameters[0]) * (parameters[3] + parameters[4]) / 2.0
                     : 0.0;
+            case TimeDistType::lognormal: // mu/sigma of the underlying normal
+                return parameters.size() == 2 && std::isfinite(parameters[0])
+                    && std::isfinite(parameters[1]) && parameters[1] >= 0
+                    ? std::exp(parameters[0] + parameters[1] * parameters[1] / 2.0) : 0.0;
             case TimeDistType::normal: // normal(mu, sigma)
                 return (parameters.size() >= 2) ? parameters[0] : 0.0;
 

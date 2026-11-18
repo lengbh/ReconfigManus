@@ -34,7 +34,7 @@ inline const nlohmann::json& ServiceTimeDistribution(const nlohmann::json& verte
         throw std::invalid_argument("Station SMP requires one probability row per state");
     const std::unordered_set<std::string> types = {
         "constant", "normal", "uniform", "exponential", "triangular", "weibull",
-        "empirical", "uniform_mixture",
+        "empirical", "uniform_mixture", "lognormal",
     };
     for (const auto& state : state_names)
     {
@@ -76,6 +76,8 @@ inline const nlohmann::json& ServiceTimeDistribution(const nlohmann::json& verte
             for (const auto& value : parameters)
                 if (!value.is_number() || !std::isfinite(value.get<double>()))
                     throw std::invalid_argument("SMP distribution parameters must be finite numbers");
+            if (type == "lognormal" && parameters[1].get<double>() < 0)
+                throw std::invalid_argument("Lognormal sigma must be nonnegative");
             if (type == "empirical")
                 for (const auto& value : parameters)
                     if (value.get<double>() < 0)
